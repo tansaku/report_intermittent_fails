@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'report_intermittent_fails/version'
+require 'report_intermittent_fails/version'
+require 'report_intermittent_fails/reassemble_spec_examples'
+require 'report_intermittent_fails/rerun_failing_tests'
 require 'report_intermittent_fails/railtie' if defined?(Rails)
 
 # tools to help report intermittently failing tests as github issues

@@ -4,7 +4,7 @@ require 'fileutils'
 
 # just holding some methods to be used in rake tasks
 module ReportIntermittentFails
-  def self.reassemble_spec_examples 
+  def self.reassemble_spec_examples
     # can't get this little bash script to work on jenkins, but works fine on local machine
     # sh '''array=( ./spec/examples-*.txt )
     # { cat ${array[@]:0:1}; grep -hv "^example_id\|^--------" ${array[@]:1}; } > ./spec/examples.txt'''

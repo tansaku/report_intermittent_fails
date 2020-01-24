@@ -1,7 +1,6 @@
+# frozen_string_literal: true
 
-require 'fileutils'
-require 'reassemble_spec_examples'
-require 'rerun_failing_tests'
+require 'report_intermittent_fails'
 require 'rails'
 
 module ReportIntermittentFails
