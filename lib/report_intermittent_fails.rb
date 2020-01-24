@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'report_intermittent_fails/version'
+require 'version'
 
 # tools to help report intermittently failing tests as github issues
 module ReportIntermittentFails
