@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'version'
+require_relative 'report_intermittent_fails/version'
+require 'report_intermittent_fails/railtie' if defined?(Rails)
 
 # tools to help report intermittently failing tests as github issues
 module ReportIntermittentFails

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require 'fileutils'
-require 'github/create_intermittent_fail_issue'
-require './lib/rspec/intermittent_fails'
+require '.lib/create_intermittent_fail_issue'
+require './lib/report_intermittent_fails'
 
 DEFAULT_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupport/#{ENV['CIRCLE_BUILD_NUM']}/tests"
 
