@@ -23,7 +23,7 @@ task :rerun_failing_tests do
   failed_first_run_specs = `grep "| failed" ./spec/examples.txt.run1 | cut -d" " -f1`.split("\n")
   puts "\n#{failed_first_run_specs.count} first run failures\n"
 
-  flappies = list_intermittent_fails(failed_first_run_specs, logging: true)
+  flappies = ReportIntermittentFails.list_intermittent_fails(failed_first_run_specs, logging: true)
 
   build_commit = ENV['CIRCLE_SHA1'] || ENV['GIT_COMMIT']
   build_branch = ENV['CIRCLE_BRANCH'] || ENV['GIT_BRANCH']

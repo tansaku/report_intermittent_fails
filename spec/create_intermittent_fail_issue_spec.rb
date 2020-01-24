@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'create_intermittent_fail_issue'
 
-RSpec.describe CreateIntermittentFailIssue do
+RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
   let(:client) { spy :octokit_client }
   let(:title) { './spec/models/quote/quote_spec.rb[1:1:2]' }
 
