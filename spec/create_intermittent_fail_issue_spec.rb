@@ -6,47 +6,81 @@ require 'create_intermittent_fail_issue'
 RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
   let(:client) { spy :octokit_client }
   let(:title) { './spec/models/quote/quote_spec.rb[1:1:2]' }
+  let(:repo_name_with_owner) { 'AgileVentures/LocalSupport' }
+  let(:search_issues_query) { "repo:#{repo_name_with_owner} \"#{title}\"+in:title" }
+
+  subject(:create_intermittent_fail_issue) do
+    described_class.with(title: title,
+                         body: 'body',
+                         branch: branch,
+                         repo_name_with_owner: repo_name_with_owner,
+                         client: client,
+                         main_branch: 'master')
+  end
+
+  before do
+    allow(client).to receive(:search_issues).with(search_issues_query).and_return(result)
+  end
 
   describe '.with' do
     context 'no existing issue of same title' do
-      let(:empty_result) { double :results, total_count: 0 }
+      let(:result) { double :results, total_count: 0 }
 
-      it 'creates new issue if master branch specified' do
-        expect(client).to receive(:search_issues).with("\"#{title}\"+in:title").and_return(empty_result)
-        described_class.with(title: title, body: 'body', branch: 'master', client: client)
-        expect(client).to have_received :create_issue
+      context 'on master branch' do
+        let(:branch) { 'master' }
+        it 'creates new issue' do
+          create_intermittent_fail_issue
+          expect(client).to have_received :create_issue
+        end
       end
 
-      it 'creates no new issue if non-master branch specified' do
-        expect(client).to receive(:search_issues).with("\"#{title}\"+in:title").and_return(empty_result)
-        described_class.with(title: title, body: 'body', branch: 'non-master', client: client)
-        expect(client).not_to have_received :create_issue
+      context 'on non-master branch' do
+        let(:branch) { 'non-master' }
+        it 'creates no new issue' do
+          create_intermittent_fail_issue
+          expect(client).not_to have_received :create_issue
+        end
       end
     end
 
     context 'an existing issue of same title' do
       let(:item) { double :item, number: 1234 }
       let(:result) { double :results, total_count: 1, items: [item] }
-      before { expect(client).to receive(:search_issues).with("\"#{title}\"+in:title").and_return(result) }
 
-      it 'adds comment if master branch specified' do
-        described_class.with(title: title, body: 'body', branch: 'master', client: client)
-        expect(client).to have_received :add_comment
+      subject(:create_intermittent_fail_issue) do
+        described_class.with(title: title,
+                             body: 'body',
+                             branch: branch,
+                             repo_name_with_owner: repo_name_with_owner,
+                             client: client,
+                             main_branch: 'master')
       end
 
-      it 'adds comment if non-master branch specified' do
-        described_class.with(title: title, body: 'body', branch: 'non-master', client: client)
-        expect(client).to have_received :add_comment
+      context 'on master branch' do
+        let(:branch) { 'master' }
+        it 'adds comment ' do
+          create_intermittent_fail_issue
+          expect(client).to have_received :add_comment
+        end
+
+        it 'reopens issue' do
+          create_intermittent_fail_issue
+          expect(client).to have_received :reopen_issue
+        end
       end
 
-      it 'reopens issue if master branch specified' do
-        described_class.with(title: title, body: 'body', branch: 'master', client: client)
-        expect(client).to have_received :reopen_issue
-      end
+      context 'on non-master branch' do
+        let(:branch) { 'non-master' }
 
-      it 'does not reopen issue if non-master branch specified' do
-        described_class.with(title: title, body: 'body', branch: 'non-master', client: client)
-        expect(client).not_to have_received :reopen_issue
+        it 'adds comment if non-master branch specified' do
+          create_intermittent_fail_issue
+          expect(client).to have_received :add_comment
+        end
+
+        it 'does not reopen issue if non-master branch specified' do
+          create_intermittent_fail_issue
+          expect(client).not_to have_received :reopen_issue
+        end
       end
     end
   end

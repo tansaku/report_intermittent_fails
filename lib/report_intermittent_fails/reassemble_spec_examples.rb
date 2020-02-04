@@ -20,9 +20,8 @@ module ReportIntermittentFails
           output_file.puts content[2..-1]
         end
       end
-
-      FileUtils.cp('./spec/examples.txt', './spec/examples.txt.run1')
     end
+    FileUtils.cp('./spec/examples.txt', './spec/examples.txt.run1')
 
     # have tested by adding the following to the install dependencies stage on jenkins
     # echo -e "example_id\n-------\nline1" > ./spec/examples-.txt

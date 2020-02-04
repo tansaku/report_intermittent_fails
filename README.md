@@ -21,6 +21,63 @@ Or install it yourself as:
 
 TODO: work out how this gets used ...
 
+Relying on spec_helper.rb setting:
+
+```
+  config.example_status_persistence_file_path = "spec/examples.txt"
+```
+
+and env setting
+
+```
+REPO_NAME_WITH_OWNER=AgileVentures/LocalSupport
+GITHUB_ACCESS_TOKEN=<token>
+MAIN_BRANCH=develop
+```
+
+NOTE: do we need list of branches we can open new issues for?
+
+```
+$ bundle exec dotenv rake report_intermittent_fails:rerun_failing_tests
+DEPRECATION WARNING: `secrets.secret_token` is deprecated in favor of `secret_key_base` and will be removed in Rails 6.0. (called from <top (required)> at /Users/tansaku/Documents/GitHub/AgileVentures/LocalSupport/config/environment.rb:5)
+------------------------
+Run options: include {:last_run_status=>"failed"}
+
+All examples were filtered out
+
+Randomized with seed 19009
+
+Top 0 slowest examples (0 seconds, 0.0% of total time):
+
+Finished in 0.1098 seconds (files took 6.91 seconds to load)
+0 examples, 0 failures
+
+Randomized with seed 19009
+
+Coverage report generated for RSpec to /Users/tansaku/Documents/GitHub/AgileVentures/LocalSupport/coverage. 951 / 2077 LOC (45.79%) covered.
+------------------------
+original exit status was: 0
+
+1 first run failures
+./spec/controllers/application_controller_spec.rb[1:1]
+
+Github Issue body info:
+ Build: https://travis-ci.org/AgileVentures/LocalSupport/builds//tests
+Commit: 9da70983f3f3bbfd1f1cac20b2e046f15cf566fd
+Branch: list_intermittent_fails
+ Container: N/A
+
+Submitting 1 intermittent fails
+./spec/controllers/application_controller_spec.rb
+found 1 issues for repo:AgileVentures/LocalSupport "Intermittent Fail: ./spec/controllers/application_controller_spec.rb"+in:title
+```
+
+## Approach
+
+So we have a couple of well tested objects to create issues and to analyze rspec logs.  We also have two rake tasks that are not covered in tests and involve running a chunk of stuff on the metal via backticks.
+
+Guess next step is to maybe remove all the `puts` and move to a logger, but even more important than that would be to see all this working in travis for a complete round trip there ...
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

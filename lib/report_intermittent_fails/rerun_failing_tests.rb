@@ -4,16 +4,16 @@ require 'fileutils'
 require 'create_intermittent_fail_issue'
 require 'report_intermittent_fails'
 
-DEFAULT_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupport/#{ENV['CIRCLE_BUILD_NUM']}/tests"
+CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupport/#{ENV['CIRCLE_BUILD_NUM']}/tests"
 
 # just holding some methods to be used in rake tasks
 module ReportIntermittentFails
   def self.rerun_failing_tests
-    FileUtils.rm Dir.glob('./spec/examples-*.txt')
+    FileUtils.rm Dir.glob('./spec/examples-*.txt') # this was to remove parallel runs
     FileUtils.cp('./spec/examples.txt', './spec/examples-2.txt') # because TEST_ENV_NUMBER default to 2
 
     ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future
-    output = `bundle exec rspec --only-failures`
+    output = `bundle exec rspec --only-failures` # so here we are relying on rspec config
     puts '------------------------'
     puts output
     puts '------------------------'
@@ -22,20 +22,23 @@ module ReportIntermittentFails
 
     FileUtils.mv('./spec/examples-2.txt', './spec/examples.txt.run2')
 
+    # assume that ./spec/examples.txt.run1 is available from previous reassemble step
     failed_first_run_specs = `grep "| failed" ./spec/examples.txt.run1 | cut -d" " -f1`.split("\n")
     puts "\n#{failed_first_run_specs.count} first run failures\n"
 
-    flappies = ReportIntermittentFails.list_intermittent_fails(failed_first_run_specs, logging: true)
+    fails = ReportIntermittentFails.list_intermittent_fails(failed_first_run_specs, logging: true)
 
-    build_commit = ENV['CIRCLE_SHA1'] || ENV['GIT_COMMIT']
-    build_branch = ENV['CIRCLE_BRANCH'] || ENV['GIT_BRANCH']
-    build_url    = ENV['BUILD_URL'] || DEFAULT_BUILD_URL
+    repo_name_with_owner = ENV['REPO_NAME_WITH_OWNER'] || ENV['TRAVIS_REPO_SLUG']
+    default_build_url = "https://travis-ci.org/#{repo_name_with_owner}/builds/#{ENV['TRAVIS_BUILD_ID']}"
+    build_commit = ENV['CIRCLE_SHA1'] || ENV['GIT_COMMIT'] || ENV['TRAVIS_COMMIT'] || `git rev-parse HEAD`.chomp
+    build_branch = ENV['CIRCLE_BRANCH'] || ENV['GIT_BRANCH'] || ENV['TRAVIS_BRANCH'] || `git rev-parse --abbrev-ref HEAD`.chomp
+    build_url    = ENV['BUILD_URL'] || ENV['TRAVIS_JOB_WEB_URL'] || default_build_url
     build_node   = ENV['CIRCLE_NODE_INDEX'] || 'N/A'
 
     body = "Build: #{build_url}\nCommit: #{build_commit}\nBranch: #{build_branch}\n Container: #{build_node}"
 
     puts "\nGithub Issue body info:\n #{body}\n\n"
-    puts "Submitting #{flappies.count} flappies\n"
+    puts "Submitting #{fails.count} intermittent fails\n"
     fails.each do |fail|
       puts fail
       CreateIntermittentFailIssue.with(title: "Intermittent Fail: #{fail}", body: body, branch: build_branch)
