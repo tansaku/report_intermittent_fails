@@ -19,9 +19,18 @@ Gem::Specification.new do |spec|
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
-  end
+  # spec.files = Dir.chdir(File.expand_path(__dir__)) do
+  #   `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|fixtures|Rakefile)/}) }
+  # end
+  spec.files = [
+    'lib/create_intermittent_fail_issue.rb',
+    'lib/report_intermittent_fails.rb',
+    'lib/report_intermittent_fails/railtie.rb',
+    'lib/report_intermittent_fails/reassemble_spec_examples.rb',
+    'lib/report_intermittent_fails/rerun_failing_tests.rb',
+    'lib/report_intermittent_fails/version.rb',
+    'report_intermittent_fails.gemspec'
+  ]
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
