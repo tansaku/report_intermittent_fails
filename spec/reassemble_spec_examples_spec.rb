@@ -4,7 +4,7 @@ require 'fileutils'
 
 describe '.reassemble_spec_examples' do
   let(:results_files_wildcard) { './fixtures/examples-*.txt' }
-  let(:default_result_file) { './fixtures/default_results_file.txt' }
+  let(:default_result_file) { './fixtures/default_result_file.txt' }
   let(:first_run_result_file) { './fixtures/examples.txt.run1' }
   let(:first_run_expected_result_file) { './fixtures/examples.txt.run1.expected' }
 

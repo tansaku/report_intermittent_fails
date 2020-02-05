@@ -19,7 +19,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: work out how this gets used ...
+:construction: UNDER CONSTRUCTION :construction:
 
 Relying on spec_helper.rb setting:
 
@@ -82,13 +82,15 @@ even if you are not breaking the tests up to run in parallel `reassemble_spec_ex
 
 ## TODO
 
+* remove all puts and place with logger ...
 * are there existing test reassembling tools that would be more reliable for us to use?
+* review the rubocop disables we've put in
 
 ## Approach
 
-So we have a couple of well tested objects to create issues and to analyze rspec logs.  We also have two rake tasks that are not covered in tests and involve running a chunk of stuff on the metal via backticks.
+So we have a couple of well tested objects to create issues and to analyze rspec logs.  There are a few places where we are running on the metal via backticks.
 
-Guess next step is to maybe remove all the `puts` and move to a logger, but even more important than that would be to see all this working in travis for a complete round trip there ...
+Everything is under tests, but we could probably use another object in the rerun_failing_tests file.
 
 ## Development
 
@@ -108,8 +110,8 @@ Everyone interacting in the ReportIntermittentFails project’s codebases, issue
 
 * [ ] usage instructions
 * [ ] consistent approach for env vars
-* [ ] more tests 
-* [ ] gemification
+* [x] more tests 
+* [x] gemification
 
 ## Related
 

@@ -59,26 +59,28 @@ describe ReportIntermittentFails do
   end
 
   let(:results_files_wildcard) { './fixtures/examples-*.txt.dummy' }
-  let(:default_result_file) { './fixtures/default_results_file.txt' }
+  let(:default_result_file) { './fixtures/default_result_file.txt' }
   let(:first_run_result_file) { './fixtures/examples.txt.run1' }
   let(:second_run_result_file) { './fixtures/examples.txt.run2' }
   let(:temp_result_file) { './fixtures/examples.txt.run2.dummy' }
-  let(:first_run_expected_result_file) { './fixtures/examples.txt.run1.expected' }
   let(:rspec_command) { 'pwd' }
   let(:issue_creator) { double ReportIntermittentFails::CreateIntermittentFailIssue, with: '' }
   let(:reporter) { double ReportIntermittentFails, list_intermittent_fails: ['I am a fail'] }
+  let(:config) { ReportIntermittentFails::Config }
 
-  # before { FileUtils.rm first_run_result_file }
+  before do
+    allow(config).to receive(:results_files_wildcard).and_return results_files_wildcard
+    allow(config).to receive(:default_result_file).and_return default_result_file
+    allow(config).to receive(:first_run_result_file).and_return first_run_result_file
+    allow(config).to receive(:second_run_result_file).and_return second_run_result_file
+    allow(config).to receive(:temp_result_file).and_return temp_result_file
+    allow(config).to receive(:rspec_command).and_return rspec_command
+  end
 
+  # rubocop:disable Style/MultilineBlockChain
   it '#rerun_failing_tests' do
     expect do
-      ReportIntermittentFails.rerun_failing_tests(results_files_wildcard,
-                                                  default_result_file,
-                                                  first_run_result_file,
-                                                  second_run_result_file,
-                                                  temp_result_file,
-                                                  rspec_command,
-                                                  issue_creator,
+      ReportIntermittentFails.rerun_failing_tests(issue_creator,
                                                   reporter)
     end.to raise_error(SystemExit) do |error|
       expect(error.status).to eq(0)
@@ -88,4 +90,5 @@ describe ReportIntermittentFails do
     # TODO need to stub CreateIntermittentFailIssue
     # use logger, handle exit
   end
+  # rubocop:enable Style/MultilineBlockChain
 end

@@ -13,8 +13,7 @@ module ReportIntermittentFails
     # { cat ${array[@]:0:1}; grep -hv "^example_id\|^--------" ${array[@]:1}; } > ./spec/examples.txt'''
     # so using below ruby instead
 
-    files = Dir[results_files_wildcard].sort
-    file_contents = files.map { |f| File.readlines(f) }
+    file_contents = file_contents_nested_array(results_files_wildcard)
 
     unless file_contents.empty?
       File.open(default_result_file, 'w') do |output_file|
@@ -32,5 +31,10 @@ module ReportIntermittentFails
     # echo -e "example_id\n-------\nline3" > ./spec/examples-2.txt
     # bundle exec rails reassemble_spec_examples
     # more ./spec/examples.txt
+  end
+
+  def self.file_contents_nested_array(results_files_wildcard)
+    files = Dir[results_files_wildcard].sort
+    files.map { |f| File.readlines(f) }
   end
 end

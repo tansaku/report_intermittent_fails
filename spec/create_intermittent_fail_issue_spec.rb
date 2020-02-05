@@ -13,12 +13,14 @@ RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
     described_class.with(title: title,
                          body: 'body',
                          branch: branch,
-                         repo_name_with_owner: repo_name_with_owner,
-                         client: client,
-                         main_branch: 'master')
+                         client: client)
   end
 
+  let(:config) { ReportIntermittentFails::Config }
+
   before do
+    allow(config).to receive(:repo_name_with_owner).and_return repo_name_with_owner
+    allow(config).to receive(:main_branch).and_return 'master'
     allow(client).to receive(:search_issues).with(search_issues_query).and_return(result)
   end
 
@@ -51,9 +53,7 @@ RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
         described_class.with(title: title,
                              body: 'body',
                              branch: branch,
-                             repo_name_with_owner: repo_name_with_owner,
-                             client: client,
-                             main_branch: 'master')
+                             client: client)
       end
 
       context 'on master branch' do
