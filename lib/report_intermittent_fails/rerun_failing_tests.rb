@@ -1,13 +1,33 @@
 # frozen_string_literal: true
 
 require 'fileutils'
-require 'create_intermittent_fail_issue'
-require 'report_intermittent_fails'
+require_relative 'create_intermittent_fail_issue'
 
 CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupport/#{ENV['CIRCLE_BUILD_NUM']}/tests"
 
-# just holding some methods to be used in rake tasks
+# tools to help report intermittently failing tests as github issues
 module ReportIntermittentFails
+  def self.list_intermittent_fails(failed_first_run_specs,
+                                   logging: false,
+                                   filesystem: File,
+                                   filename: './spec/examples.txt.run2')
+    lines = filesystem.readlines(filename)
+    failed_first_run_specs.each_with_object([]) do |failure, memo|
+      puts failure if logging
+      memo << get_rb_file_name(failure) if passed_on_second_run?(lines, failure)
+    end
+  end
+
+  def self.passed_on_second_run?(lines, failure)
+    lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
+  end
+
+  RUBY_FILE_SUFFIX = '.rb'
+
+  def self.get_rb_file_name(name)
+    name[0..(name.index(RUBY_FILE_SUFFIX) + RUBY_FILE_SUFFIX.length - 1)]
+  end
+
   def self.rerun_failing_tests
     FileUtils.rm Dir.glob('./spec/examples-*.txt') # this was to remove parallel runs
     FileUtils.cp('./spec/examples.txt', './spec/examples-2.txt') # because TEST_ENV_NUMBER default to 2

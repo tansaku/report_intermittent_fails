@@ -23,8 +23,8 @@ Gem::Specification.new do |spec|
   #   `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|fixtures|Rakefile)/}) }
   # end
   spec.files = [
-    'lib/create_intermittent_fail_issue.rb',
     'lib/report_intermittent_fails.rb',
+    'lib/report_intermittent_fails/create_intermittent_fail_issue.rb',
     'lib/report_intermittent_fails/railtie.rb',
     'lib/report_intermittent_fails/reassemble_spec_examples.rb',
     'lib/report_intermittent_fails/rerun_failing_tests.rb',
