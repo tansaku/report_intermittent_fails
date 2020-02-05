@@ -12,7 +12,7 @@ describe '.reassemble_spec_examples' do
     FileUtils.rm first_run_result_file if File.exist? first_run_result_file
   end
 
-  it 'takes several spec files and merge them into one' do
+  it 'takes several spec files and merges them into one' do
     ReportIntermittentFails.reassemble_spec_examples(results_files_wildcard,
                                                      default_result_file,
                                                      first_run_result_file)

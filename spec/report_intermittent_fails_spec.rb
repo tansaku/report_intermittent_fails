@@ -67,8 +67,10 @@ describe ReportIntermittentFails do
   let(:issue_creator) { double ReportIntermittentFails::CreateIntermittentFailIssue, with: '' }
   let(:reporter) { double ReportIntermittentFails, list_intermittent_fails: ['I am a fail'] }
   let(:config) { ReportIntermittentFails::Config }
+  let(:logger) { Logger.new(STDOUT, level: :warn) }
 
   before do
+    allow(config).to receive(:logger).and_return logger
     allow(config).to receive(:results_files_wildcard).and_return results_files_wildcard
     allow(config).to receive(:default_result_file).and_return default_result_file
     allow(config).to receive(:first_run_result_file).and_return first_run_result_file

@@ -7,39 +7,34 @@ CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupp
 
 # tools to help report intermittently failing tests as github issues
 module ReportIntermittentFails
-  def self.list_intermittent_fails(failed_first_run_specs,
-                                   logging: false,
-                                   filesystem: File,
-                                   filename: Config.second_run_result_file)
-    lines = filesystem.readlines(filename)
-    failed_first_run_specs.each_with_object([]) do |failure, memo|
-      puts failure if logging
-      memo << get_rb_file_name(failure) if passed_on_second_run?(lines, failure)
-    end
-  end
-
-  def self.passed_on_second_run?(lines, failure)
-    lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
-  end
-
-  RUBY_FILE_SUFFIX = '.rb'
-
-  def self.get_rb_file_name(name)
-    name[0..(name.index(RUBY_FILE_SUFFIX) + RUBY_FILE_SUFFIX.length - 1)]
-  end
-
   def self.rerun_failing_tests(issue_creator = CreateIntermittentFailIssue,
                                reporter = ReportIntermittentFails)
-    arrange_files(Config.results_files_wildcard, Config.default_result_file, Config.temp_result_file)
-    original_exit_status = run_rspec_and_output(Config.rspec_command)
+    arrange_files
+    original_exit_status = run_rspec_and_output
 
     FileUtils.mv(Config.temp_result_file, Config.second_run_result_file)
 
     # assume that ./spec/examples.txt.run1 is available from previous reassemble step
     failed_first_run_specs = `grep "| failed" #{Config.first_run_result_file} | cut -d" " -f1`.split("\n")
-    puts "\n#{failed_first_run_specs.count} first run failures\n"
+    Config.logger.info "\n#{failed_first_run_specs.count} first run failures\n"
 
     check_for_fails(failed_first_run_specs, reporter, issue_creator, original_exit_status)
+  end
+
+  def self.arrange_files
+    FileUtils.rm Dir.glob(Config.results_files_wildcard) # this was to remove parallel runs
+    FileUtils.cp(Config.default_result_file, Config.temp_result_file) # because TEST_ENV_NUMBER default to 2
+  end
+
+  def self.run_rspec_and_output
+    ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
+    output = `#{Config.rspec_command}` # so here we are relying on rspec config
+    Config.logger.info '------------------------'
+    Config.logger.info output
+    Config.logger.info '------------------------'
+    original_exit_status = $CHILD_STATUS.exitstatus
+    Config.logger.info "original exit status was: #{original_exit_status}"
+    original_exit_status
   end
 
   def self.check_for_fails(failed_first_run_specs,
@@ -48,32 +43,38 @@ module ReportIntermittentFails
                            original_exit_status)
     fails = reporter.list_intermittent_fails(failed_first_run_specs, logging: true)
 
-    puts "\nGithub Issue body info:\n #{body}\n\n"
-    puts "Submitting #{fails.count} intermittent fails\n"
+    Config.logger.info "\nGithub Issue body info:\n #{body}\n\n"
+    Config.logger.info "Submitting #{fails.count} intermittent fails\n"
     fails.each do |fail|
-      puts fail
+      Config.logger.info fail
       issue_creator.with(title: "Intermittent Fail: #{fail}", body: body, branch: build_branch)
     end
 
     exit(original_exit_status)
   end
 
-  def self.run_rspec_and_output(rspec_command)
-    ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
-    output = `#{rspec_command}` # so here we are relying on rspec config
-    puts '------------------------'
-    puts output
-    puts '------------------------'
-    original_exit_status = $CHILD_STATUS.exitstatus
-    puts "original exit status was: #{original_exit_status}"
-    original_exit_status
+  def self.list_intermittent_fails(failed_first_run_specs,
+                                   logging: false,
+                                   filesystem: File,
+                                   filename: Config.second_run_result_file)
+    lines = filesystem.readlines(filename)
+    failed_first_run_specs.each_with_object([]) do |failure, memo|
+      Config.logger.info failure if logging
+      memo << get_rb_file_name(failure) if passed_on_second_run?(lines, failure)
+    end
   end
 
-  def self.arrange_files(results_files_wildcard, default_result_file, temp_result_file)
-    FileUtils.rm Dir.glob(results_files_wildcard) # this was to remove parallel runs
-    FileUtils.cp(default_result_file, temp_result_file) # because TEST_ENV_NUMBER default to 2
+  RUBY_FILE_SUFFIX = '.rb'
+
+  def self.get_rb_file_name(name)
+    name[0..(name.index(RUBY_FILE_SUFFIX) + RUBY_FILE_SUFFIX.length - 1)]
   end
 
+  def self.passed_on_second_run?(lines, failure)
+    lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
+  end
+
+  # Move all the below to Config?
   def self.body
     "Build: #{build_url}\nCommit: #{build_commit}\nBranch: #{build_branch}\n Container: #{build_node}"
   end

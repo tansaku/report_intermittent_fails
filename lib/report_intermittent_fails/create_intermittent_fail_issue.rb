@@ -29,7 +29,7 @@ module ReportIntermittentFails
       # or just log everything?
       query = "repo:#{Config.repo_name_with_owner} \"#{title}\"+in:title"
       self.results = client.search_issues(query)
-      # puts "found #{results.total_count} issues for #{query}"
+      # Config.logger.info "found #{results.total_count} issues for #{query}"
       results.total_count.zero? ? handle_new_intermittent_fail : handle_existing_intermittent_fail
     end
 

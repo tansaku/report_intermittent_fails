@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
-require 'report_intermittent_fails/settings'
+require 'report_intermittent_fails/config'
 
 describe ReportIntermittentFails::Config do
   subject(:config) { described_class }
+
+  it 'has logger set' do
+    expect(config.logger).not_to be_nil
+  end
 
   it 'has results_files_wildcard set' do
     expect(config.results_files_wildcard).to eq './spec/examples-*.txt'

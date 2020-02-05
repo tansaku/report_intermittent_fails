@@ -1,8 +1,14 @@
 # frozen_string_literal: true
 
+require 'logger'
+
 module ReportIntermittentFails
   # config settings
   class Config
+    def self.logger
+      @logger ||= Logger.new(STDOUT, level: :info)
+    end
+
     def self.results_files_wildcard
       './spec/examples-*.txt'
     end

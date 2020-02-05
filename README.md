@@ -27,7 +27,7 @@ Relying on spec_helper.rb setting:
   config.example_status_persistence_file_path = "spec/examples.txt"
 ```
 
-and env setting
+and env settings specific to the project you want to check intermittent fails on like so (will usually be need to set on CI)
 
 ```
 REPO_NAME_WITH_OWNER=AgileVentures/LocalSupport
@@ -36,6 +36,8 @@ MAIN_BRANCH=develop
 ```
 
 NOTE: do we need list of branches we can open new issues for?
+
+From the command line tasks can be run like so, but really they are intended to be run as part of a CI build
 
 ```
 $ bundle exec dotenv rake report_intermittent_fails:rerun_failing_tests
@@ -72,25 +74,30 @@ Submitting 1 intermittent fails
 found 1 issues for repo:AgileVentures/LocalSupport "Intermittent Fail: ./spec/controllers/application_controller_spec.rb"+in:title
 ```
 
-to run in CI the gem needs to be added and the takes run from the CI script, e.g. in .travis.yml
+to run in CI the gem needs to be added to the project you want to monitor and the tasks run from the CI script, e.g. in .travis.yml
 
 ```
 - bundle exec rake report_intermittent_fails:reassemble_spec_examples
 - bundle exec rake report_intermittent_fails:rerun_failing_tests
 ```
+
 even if you are not breaking the tests up to run in parallel `reassemble_spec_examples` is currently needed to put the test results in the correct file for processing by `rerun_failing_tests`
 
 ## TODO
 
-* remove all puts and place with logger ...
-* are there existing test reassembling tools that would be more reliable for us to use?
-* review the rubocop disables we've put in
+* [ ] usage instructions
+* [ ] consistent approach for env vars
+* [x] more tests 
+* [x] gemification
+* [x] remove all puts and place with logger ...
+* [ ] are there existing test reassembling tools that would be more reliable for us to use?
+* [ ] review the rubocop disables we've put in
 
 ## Approach
 
 So we have a couple of well tested objects to create issues and to analyze rspec logs.  There are a few places where we are running on the metal via backticks.
 
-Everything is under tests, but we could probably use another object in the rerun_failing_tests file.
+Everything is under tests, but we could probably use another object in the rerun_failing_tests file, and some general review and reorganisation there as it's just been split up to meet the rubocop requirements rather than been made to appear coherent ...
 
 ## Development
 
@@ -105,13 +112,6 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/tansak
 ## Code of Conduct
 
 Everyone interacting in the ReportIntermittentFails project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/tansaku/report_intermittent_fails/blob/master/CODE_OF_CONDUCT.md).
-
-## TODO
-
-* [ ] usage instructions
-* [ ] consistent approach for env vars
-* [x] more tests 
-* [x] gemification
 
 ## Related
 

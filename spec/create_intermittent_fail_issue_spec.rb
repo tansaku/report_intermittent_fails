@@ -17,8 +17,10 @@ RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
   end
 
   let(:config) { ReportIntermittentFails::Config }
+  let(:logger) { Logger.new(STDOUT, level: :warn) }
 
   before do
+    allow(config).to receive(:logger).and_return logger
     allow(config).to receive(:repo_name_with_owner).and_return repo_name_with_owner
     allow(config).to receive(:main_branch).and_return 'master'
     allow(client).to receive(:search_issues).with(search_issues_query).and_return(result)
