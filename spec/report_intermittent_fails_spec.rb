@@ -57,4 +57,35 @@ describe ReportIntermittentFails do
   it '#get_rb_file_name' do
     expect(ReportIntermittentFails.get_rb_file_name('ruby.rb[1:1]')).to eq('ruby.rb')
   end
+
+  let(:results_files_wildcard) { './fixtures/examples-*.txt.dummy' }
+  let(:default_result_file) { './fixtures/default_results_file.txt' }
+  let(:first_run_result_file) { './fixtures/examples.txt.run1' }
+  let(:second_run_result_file) { './fixtures/examples.txt.run2' }
+  let(:temp_result_file) { './fixtures/examples.txt.run2.dummy' }
+  let(:first_run_expected_result_file) { './fixtures/examples.txt.run1.expected' }
+  let(:rspec_command) { 'pwd' }
+  let(:issue_creator) { double ReportIntermittentFails::CreateIntermittentFailIssue, with: '' }
+  let(:reporter) { double ReportIntermittentFails, list_intermittent_fails: ['I am a fail'] }
+
+  # before { FileUtils.rm first_run_result_file }
+
+  it '#rerun_failing_tests' do
+    expect do
+      ReportIntermittentFails.rerun_failing_tests(results_files_wildcard,
+                                                  default_result_file,
+                                                  first_run_result_file,
+                                                  second_run_result_file,
+                                                  temp_result_file,
+                                                  rspec_command,
+                                                  issue_creator,
+                                                  reporter)
+    end.to raise_error(SystemExit) do |error|
+      expect(error.status).to eq(0)
+    end
+    # identical = FileUtils.identical?(first_run_expected_result_file, first_run_result_file)
+    # expect(identical).to be true
+    # TODO need to stub CreateIntermittentFailIssue
+    # use logger, handle exit
+  end
 end

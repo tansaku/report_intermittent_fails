@@ -1,0 +1,8 @@
+example_id                                                                  | status  | run_time        |
+--------------------------------------------------------------------------- | ------- | --------------- |
+./spec/controllers/application_controller_spec.rb[1:8:1:1]                  | passed  | 0.00528 seconds |
+./spec/controllers/application_controller_spec.rb[1:8:1:2]                  | passed  | 0.00236 seconds |
+./spec/controllers/application_controller_spec.rb[1:8:2:1]                  | passed  | 0.00178 seconds |
+./spec/controllers/application_controller_spec.rb[1:8:2:2]                  | passed  | 0.00172 seconds |
+./spec/controllers/application_controller_spec.rb[1:8:3:1:1]                | passed  | 0.02123 seconds |
+./spec/controllers/application_controller_spec.rb[1:8:3:2:1]                | passed  | 0.0155 seconds  |

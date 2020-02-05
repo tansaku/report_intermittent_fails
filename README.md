@@ -72,6 +72,18 @@ Submitting 1 intermittent fails
 found 1 issues for repo:AgileVentures/LocalSupport "Intermittent Fail: ./spec/controllers/application_controller_spec.rb"+in:title
 ```
 
+to run in CI the gem needs to be added and the takes run from the CI script, e.g. in .travis.yml
+
+```
+- bundle exec rake report_intermittent_fails:reassemble_spec_examples
+- bundle exec rake report_intermittent_fails:rerun_failing_tests
+```
+even if you are not breaking the tests up to run in parallel `reassemble_spec_examples` is currently needed to put the test results in the correct file for processing by `rerun_failing_tests`
+
+## TODO
+
+* are there existing test reassembling tools that would be more reliable for us to use?
+
 ## Approach
 
 So we have a couple of well tested objects to create issues and to analyze rspec logs.  We also have two rake tasks that are not covered in tests and involve running a chunk of stuff on the metal via backticks.

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pry-byebug'
+
 require 'simplecov'
 require 'simplecov-console'
 SimpleCov.start do
