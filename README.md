@@ -41,7 +41,6 @@ From the command line tasks can be run like so, but really they are intended to 
 
 ```
 $ bundle exec dotenv rake report_intermittent_fails:rerun_failing_tests
-DEPRECATION WARNING: `secrets.secret_token` is deprecated in favor of `secret_key_base` and will be removed in Rails 6.0. (called from <top (required)> at /Users/tansaku/Documents/GitHub/AgileVentures/LocalSupport/config/environment.rb:5)
 ------------------------
 Run options: include {:last_run_status=>"failed"}
 

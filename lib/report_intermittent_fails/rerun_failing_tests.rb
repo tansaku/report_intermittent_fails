@@ -57,6 +57,7 @@ module ReportIntermittentFails
                                    logging: false,
                                    filesystem: File,
                                    filename: Config.second_run_result_file)
+    Config.logger.info "reading lines from #{filename}"
     lines = filesystem.readlines(filename)
     failed_first_run_specs.each_with_object([]) do |failure, memo|
       Config.logger.info failure if logging
@@ -71,6 +72,8 @@ module ReportIntermittentFails
   end
 
   def self.passed_on_second_run?(lines, failure)
+    Config.logger.info "checking for #{failure} in file"
+    lines.each { |line| Config.logger.info line }
     lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
   end
 
