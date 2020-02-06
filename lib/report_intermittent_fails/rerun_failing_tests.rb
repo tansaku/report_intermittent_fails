@@ -11,8 +11,7 @@ module ReportIntermittentFails
                                reporter = ReportIntermittentFails)
     arrange_files
     original_exit_status = run_rspec_and_output
-
-    FileUtils.mv(Config.temp_result_file, Config.second_run_result_file)
+    FileUtils.mv(Config.temp_result_file, Config.second_run_result_file) # e.g. /examples-2.txt to examples.txt.run2
 
     # assume that ./spec/examples.txt.run1 is available from previous reassemble step
     failed_first_run_specs = `grep "| failed" #{Config.first_run_result_file} | cut -d" " -f1`.split("\n")
@@ -22,8 +21,8 @@ module ReportIntermittentFails
   end
 
   def self.arrange_files
-    FileUtils.rm Dir.glob(Config.results_files_wildcard) # this was to remove parallel runs
-    FileUtils.cp(Config.default_result_file, Config.temp_result_file) # because TEST_ENV_NUMBER default to 2
+    FileUtils.rm Dir.glob(Config.results_files_wildcard) # this is to remove parallel run files
+    FileUtils.cp(Config.default_result_file, Config.temp_result_file) # because TEST_ENV_NUMBER defaulted to 2
   end
 
   def self.run_rspec_and_output

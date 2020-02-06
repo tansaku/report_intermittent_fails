@@ -32,17 +32,19 @@ RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
 
       context 'on master branch' do
         let(:branch) { 'master' }
-        it 'creates new issue' do
+        it 'creates new issue and leaves it open' do
           create_intermittent_fail_issue
           expect(client).to have_received :create_issue
+          expect(client).not_to have_received :close_issue
         end
       end
 
       context 'on non-master branch' do
         let(:branch) { 'non-master' }
-        it 'creates no new issue' do
+        it 'creates issue but closes it' do
           create_intermittent_fail_issue
-          expect(client).not_to have_received :create_issue
+          expect(client).to have_received :create_issue
+          expect(client).to have_received :close_issue
         end
       end
     end

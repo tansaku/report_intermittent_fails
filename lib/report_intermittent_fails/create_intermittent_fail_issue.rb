@@ -34,9 +34,11 @@ module ReportIntermittentFails
     end
 
     def handle_new_intermittent_fail
-      return unless master?(branch)
-
-      client.create_issue(Config.repo_name_with_owner, title, body, labels: [':dolphin: intermittent_fail spec'])
+      issue = client.create_issue(Config.repo_name_with_owner,
+                                  title,
+                                  body,
+                                  labels: [':dolphin: intermittent_fail spec'])
+      client.close_issue(Config.repo_name_with_owner, issue.number) unless master?(branch)
     end
 
     def handle_existing_intermittent_fail

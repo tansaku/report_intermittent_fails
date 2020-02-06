@@ -26,7 +26,7 @@ describe ReportIntermittentFails::Config do
   end
 
   it 'has temp_result_file set' do
-    expect(config.temp_result_file).to eq './spec/examples-2.txt'
+    expect(config.temp_result_file).to eq './spec/examples.txt'
   end
 
   it 'has rspec_command set' do

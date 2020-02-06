@@ -26,7 +26,7 @@ module ReportIntermittentFails
     end
 
     def self.temp_result_file
-      './spec/examples-2.txt'
+      './spec/examples.txt' # used to be examples-2.txt for when dealing with parallel
     end
 
     def self.rspec_command

@@ -4,6 +4,10 @@ require 'spec_helper'
 require 'report_intermittent_fails'
 
 describe ReportIntermittentFails do
+  let(:config) { ReportIntermittentFails::Config }
+  let(:logger) { Logger.new(STDOUT, level: :error) }
+  before { allow(config).to receive(:logger).and_return logger }
+
   it 'has a version number' do
     expect(ReportIntermittentFails::VERSION).not_to be nil
   end
@@ -73,34 +77,50 @@ describe ReportIntermittentFails do
     expect(ReportIntermittentFails.get_rb_file_name('ruby.rb[1:1]')).to eq('ruby.rb')
   end
 
-  let(:results_files_wildcard) { './fixtures/examples-*.txt.dummy' }
-  let(:default_result_file) { './fixtures/default_result_file.txt' }
-  let(:first_run_result_file) { './fixtures/examples.txt.run1' }
-  let(:second_run_result_file) { './fixtures/examples.txt.run2' }
-  let(:temp_result_file) { './fixtures/examples.txt.run2.dummy' }
-  let(:rspec_command) { 'pwd' }
-  let(:issue_creator) { double ReportIntermittentFails::CreateIntermittentFailIssue, with: '' }
-  let(:reporter) { double ReportIntermittentFails, list_intermittent_fails: ['I am a fail'] }
-  let(:config) { ReportIntermittentFails::Config }
-  let(:logger) { Logger.new(STDOUT, level: :warn) }
-
-  before do
-    allow(config).to receive(:logger).and_return logger
-    allow(config).to receive(:results_files_wildcard).and_return results_files_wildcard
-    allow(config).to receive(:default_result_file).and_return default_result_file
-    allow(config).to receive(:first_run_result_file).and_return first_run_result_file
-    allow(config).to receive(:second_run_result_file).and_return second_run_result_file
-    allow(config).to receive(:temp_result_file).and_return temp_result_file
-    allow(config).to receive(:rspec_command).and_return rspec_command
-  end
-
   # rubocop:disable Style/MultilineBlockChain
-  it '#rerun_failing_tests' do
-    expect do
-      ReportIntermittentFails.rerun_failing_tests(issue_creator,
-                                                  reporter)
-    end.to raise_error(SystemExit) do |error|
-      expect(error.status).to eq(0)
+  context '.rerun_failing_tests' do
+    let(:results_files_wildcard) { './fixtures/examples-*.txt.dummy' }
+    let(:default_result_file) { './fixtures/default_result_file.txt' }
+    let(:first_run_result_file) { './fixtures/examples.txt.run1' }
+    let(:second_run_result_file) { './fixtures/examples.txt.run2' }
+    let(:temp_result_file) { './fixtures/examples.txt.run2.dummy' }
+    let(:rspec_command) { 'pwd' }
+    let(:issue_creator) { double ReportIntermittentFails::CreateIntermittentFailIssue }
+
+    before do
+      allow(config).to receive(:results_files_wildcard).and_return results_files_wildcard
+      allow(config).to receive(:default_result_file).and_return default_result_file
+      allow(config).to receive(:first_run_result_file).and_return first_run_result_file
+      allow(config).to receive(:second_run_result_file).and_return second_run_result_file
+      allow(config).to receive(:temp_result_file).and_return temp_result_file
+      allow(config).to receive(:rspec_command).and_return rspec_command
+    end
+
+    context 'one intermittent fail' do
+      let(:default_result_file) { './fixtures/default_result_file-with-intermittent.txt' }
+
+      it '#rerun_failing_tests' do
+        expect(issue_creator).to receive(:with).once
+        expect do
+          ReportIntermittentFails.rerun_failing_tests(issue_creator)
+        end.to raise_error(SystemExit) do |error|
+          expect(error.status).to eq(0)
+        end
+      end
+    end
+
+    context 'no intermittent fails' do
+      let(:default_result_file) { './fixtures/default_result_file.txt' }
+
+      # TODO: - could do with a full end to end test as well where collaborators are not stubbed
+      it '#rerun_failing_tests' do
+        expect(issue_creator).not_to receive(:with)
+        expect do
+          ReportIntermittentFails.rerun_failing_tests(issue_creator)
+        end.to raise_error(SystemExit) do |error|
+          expect(error.status).to eq(0)
+        end
+      end
     end
   end
   # rubocop:enable Style/MultilineBlockChain
