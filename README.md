@@ -1,5 +1,8 @@
 # Report Intermittent Fails
+
 Open Github Issues for intermittently failing tests.  Inspired by [GoCardless](https://gocardless.com/blog/track-flaky-specs-automatically/)
+
+[![Build Status](https://travis-ci.com/tansaku/report_intermittent_fails.svg?branch=master)](https://travis-ci.com/tansaku/report_intermittent_fails)
 
 ## Installation
 
