@@ -7,16 +7,24 @@ CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupp
 
 # tools to help report intermittently failing tests as github issues
 module ReportIntermittentFails
-  # TODO: dry
-  def self.endtoend_check
+  # run command with output and return exit status
+  def self.run(command)
     ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
-    output = `#{Config.rspec_endtoend_command}` # so here we are relying on rspec config
+    output = `#{command}` # so here we are relying on rspec config
     Config.logger.info '------------------------'
     Config.logger.info output
     Config.logger.info '------------------------'
     original_exit_status = $?.exitstatus
     Config.logger.info "original exit status was: #{original_exit_status}"
     original_exit_status
+  end
+
+  def self.run_endtoend_check
+    run(Config.rspec_endtoend_command)
+  end
+
+  def self.run_rspec
+    run(Config.rspec_command)
   end
 
   def self.rerun_failing_tests(issue_creator = CreateIntermittentFailIssue,
@@ -27,7 +35,7 @@ module ReportIntermittentFails
     end
 
     arrange_files
-    original_exit_status = run_rspec_and_output
+    original_exit_status = run_rspec
     FileUtils.mv(Config.temp_result_file, Config.second_run_result_file) # e.g. /examples-2.txt to examples.txt.run2
 
     # assume that ./spec/examples.txt.run1 is available from previous reassemble step
@@ -40,17 +48,6 @@ module ReportIntermittentFails
   def self.arrange_files
     FileUtils.rm Dir.glob(Config.results_files_wildcard) # this is to remove parallel run files
     FileUtils.cp(Config.default_result_file, Config.temp_result_file) # because TEST_ENV_NUMBER defaulted to 2
-  end
-
-  def self.run_rspec_and_output
-    ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
-    output = `#{Config.rspec_command}` # so here we are relying on rspec config
-    Config.logger.info '------------------------'
-    Config.logger.info output
-    Config.logger.info '------------------------'
-    original_exit_status = $?.exitstatus
-    Config.logger.info "original exit status was: #{original_exit_status}"
-    original_exit_status
   end
 
   def self.check_for_fails(failed_first_run_specs,

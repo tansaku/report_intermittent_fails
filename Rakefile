@@ -28,7 +28,7 @@ namespace :report do
   end
   desc 'check endtoend test result'
   task :endtoend do
-    ReportIntermittentFails.endtoend_check
+    ReportIntermittentFails.run_endtoend_check
   end
 end
 task test_report_fails: ['report:rerun']
