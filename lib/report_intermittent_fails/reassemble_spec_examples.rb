@@ -23,6 +23,7 @@ module ReportIntermittentFails
         end
       end
     end
+    #            examples.txt       -> examples.txt.run1
     FileUtils.cp(default_result_file, first_run_result_file)
 
     # have tested by adding the following to the install dependencies stage on jenkins
