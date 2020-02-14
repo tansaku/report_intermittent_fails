@@ -7,8 +7,25 @@ CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupp
 
 # tools to help report intermittently failing tests as github issues
 module ReportIntermittentFails
+  # TODO: dry
+  def self.endtoend_check
+    ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
+    output = `#{Config.rspec_endtoend_command}` # so here we are relying on rspec config
+    Config.logger.info '------------------------'
+    Config.logger.info output
+    Config.logger.info '------------------------'
+    original_exit_status = $?.exitstatus
+    Config.logger.info "original exit status was: #{original_exit_status}"
+    original_exit_status
+  end
+
   def self.rerun_failing_tests(issue_creator = CreateIntermittentFailIssue,
                                reporter = ReportIntermittentFails)
+    unless File.exists?(Config.default_result_file)
+      Config.logger.info "\nNothing to rerun\n"
+      return
+    end
+
     arrange_files
     original_exit_status = run_rspec_and_output
     FileUtils.mv(Config.temp_result_file, Config.second_run_result_file) # e.g. /examples-2.txt to examples.txt.run2
@@ -31,7 +48,7 @@ module ReportIntermittentFails
     Config.logger.info '------------------------'
     Config.logger.info output
     Config.logger.info '------------------------'
-    original_exit_status = $CHILD_STATUS.exitstatus
+    original_exit_status = $?.exitstatus
     Config.logger.info "original exit status was: #{original_exit_status}"
     original_exit_status
   end
