@@ -58,9 +58,9 @@ module ReportIntermittentFails
 
     Config.logger.info "\nGithub Issue body info:\n #{body}\n\n"
     Config.logger.info "Submitting #{fails.count} intermittent fails\n"
-    fails.each do |fail|
-      Config.logger.info fail
-      issue_creator.with(title: "Intermittent Fail: #{fail}", body: body, branch: build_branch)
+    fails.each do |failure|
+      Config.logger.info failure
+      issue_creator.with(title: "Intermittent Fail: #{failure}", body: body, branch: build_branch)
     end
 
     exit(original_exit_status)
