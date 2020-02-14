@@ -56,12 +56,14 @@ module ReportIntermittentFails
                            original_exit_status)
     fails = reporter.list_intermittent_fails(failed_first_run_specs, logging: true)
 
-    Config.logger.info "\nGithub Issue body info:\n #{body}\n\n"
-    Config.logger.info "Submitting #{fails.count} intermittent fails\n"
+    Config.logger.info "\nGithub issue body:\n #{body}\n\n"
     fails.each do |failure|
-      Config.logger.info failure
-      issue_creator.with(title: "Intermittent Fail: #{failure}", body: body, branch: build_branch)
+      title = "Intermittent Fail: #{failure}"
+      Config.logger.info "\nGithub issue title:\n #{title}\n\n"
+
+      issue_creator.with(title: title, body: body, branch: build_branch)
     end
+    Config.logger.info "Submitting #{fails.count} intermittent fails\n"
 
     exit(original_exit_status)
   end
