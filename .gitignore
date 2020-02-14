@@ -5,7 +5,7 @@
 /InstalledFiles
 /pkg/
 /spec/reports/
-/spec/examples.txt
+/spec/examples.*
 /test/tmp/
 /test/version_tmp/
 /tmp/
