@@ -9,7 +9,7 @@ RSpec.describe 'End to end' do
     let(:repo_name_with_owner) { ReportIntermittentFails::Config.repo_name_with_owner }
     let(:intermittent_fail_indicator_file) { "./tmp/failed_on_first_run.txt" }
     let(:end_to_end_indicator_file) { "./tmp/end_to_end.txt" }
-    let(:title) { './spec/endtoend_spec.rb[1:1:1]' }
+    let(:title) { "./spec/endtoend_spec-#{Time.now.getutc}.rb" }
 
     let(:search_issues_query) { "repo:#{repo_name_with_owner} \"#{title}\"+in:title" }
 
