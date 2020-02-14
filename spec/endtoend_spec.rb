@@ -18,36 +18,32 @@ RSpec.describe 'End to end' do
     end
 
     context 'randomly failing issue reporting' do
-      context 'on master branch' do
-        let(:branch) { 'master' }
+      it 'creates new issue and leaves it open' do
+        if File.exists?(end_to_end_indicator_file)
+          # this is the third run, we need to check if the issue was created and left open
+          # delete the indicator file
+          File.delete(end_to_end_indicator_file)
 
-        it 'creates new issue and leaves it open' do
-          if File.exists?(end_to_end_indicator_file)
-            # this is the third run, we need to check if the issue was created and left open
-            # delete the indicator file
-            File.delete(end_to_end_indicator_file)
+          expect(Github.issue_exists?(title, client: client)).to eq true
+        elsif File.exists?(intermittent_fail_indicator_file)
+          # this is the second run
 
-            expect(Github.issue_exists?(title, client: client)).to eq true
-          elsif File.exists?(intermittent_fail_indicator_file)
-            # this is the second run
+          # delete the indicator file
+          File.delete(intermittent_fail_indicator_file)
 
-            # delete the indicator file
-            File.delete(intermittent_fail_indicator_file)
+          # when the file exists, it means the first run has happened,
+          # it is impossible to check if the issue was created at this point, since it will be created only after this spec finishes
+          # so we leave this for a third pass, which needs to be invoked by the CI script, then a check for the presence of the issue can be done
+          # rake report:endtoend
 
-            # when the file exists, it means the first run has happened,
-            # it is impossible to check if the issue was created at this point, since it will be created only after this spec finishes
-            # so we leave this for a third pass, which needs to be invoked by the CI script, then a check for the presence of the issue can be done
-            # rake report:endtoend
-
-            # here we only set up an indicator for the third run:
-            File.write(intermittent_fail_indicator_file, search_issues_query)
-          else
-            # when the file is not there, it means this test is being run for the first time,
-            # so generate the file and fail to simulate a random fail, the subsequent run would then succeed
-            File.write(intermittent_fail_indicator_file, 'Fail')
-            expect("random").to eq "fail"
-            # after this spec finishes, an issue should be opened
-          end
+          # here we only set up an indicator for the third run:
+          File.write(intermittent_fail_indicator_file, search_issues_query)
+        else
+          # when the file is not there, it means this test is being run for the first time,
+          # so generate the file and fail to simulate a random fail, the subsequent run would then succeed
+          File.write(intermittent_fail_indicator_file, 'Fail')
+          expect("random").to eq "fail"
+          # after this spec finishes, an issue should be opened
         end
       end
     end
