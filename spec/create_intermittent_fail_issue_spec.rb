@@ -13,7 +13,8 @@ RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
     described_class.with(title: title,
                          body: 'body',
                          branch: branch,
-                         client: client)
+                         client: client,
+                         config: config)
   end
 
   let(:config) { ReportIntermittentFails::Config }

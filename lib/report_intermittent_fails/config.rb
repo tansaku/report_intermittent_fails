@@ -41,6 +41,10 @@ module ReportIntermittentFails
       ENV['REPO_NAME_WITH_OWNER'] # Idea: can be read from .git/config
     end
 
+    def self.access_token
+      ENV['GITHUB_ACCESS_TOKEN']
+    end
+
     def self.main_branch
       ENV['MAIN_BRANCH'] || 'master'
     end

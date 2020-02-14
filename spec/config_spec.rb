@@ -37,6 +37,10 @@ describe ReportIntermittentFails::Config do
     expect(config.repo_name_with_owner).to eq ENV['REPO_NAME_WITH_OWNER']
   end
 
+  it 'has github access token set' do
+    expect(config.access_token).to eq ENV['GITHUB_ACCESS_TOKEN']
+  end
+
   it 'has main_branch set' do
     expect(config.main_branch).to eq 'master'
   end
