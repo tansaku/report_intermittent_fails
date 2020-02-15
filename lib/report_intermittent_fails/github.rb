@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'octokit'
+require_relative 'config'
 
 module ReportIntermittentFails
   # Extra methods to work with the github client
@@ -23,7 +24,18 @@ module ReportIntermittentFails
     def self.issue_exists?(title, issues = nil, client: octokit_client, config: ReportIntermittentFails::Config)
       issues ||= Github.search_issues_by_title(title, client: client, config: config)
 
-      issues.total_count.zero? != true
+      issues.total_count == 1
+    end
+
+    # check if an issue with the passed in title was commented in the last minute
+    def self.issue_was_commented_in_the_last_minute?(title, issues = nil, client: octokit_client, config: ReportIntermittentFails::Config)
+      issues ||= Github.search_issues_by_title(title, client: client, config: config)
+
+      issue_number = issues.items.first.number
+      comments = client.issue_comments(config.repo_name_with_owner, issue_number) # this can become huge! is there a better way?
+      comment = comments.last
+
+      comment.created_at.utc < Time.now.utc - 60
     end
 
     # expose octokit
