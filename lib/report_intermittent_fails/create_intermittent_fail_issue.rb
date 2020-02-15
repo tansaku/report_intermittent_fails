@@ -26,7 +26,11 @@ module ReportIntermittentFails
 
     def create_intermittent_fail_spec_issue
       self.issues = Github.search_issues_by_title(title, client: client, config: config)
-      Github.issue_exists?(title, issues, client: client, config: config) ? handle_existing_intermittent_fail : handle_new_intermittent_fail
+      if Github.issue_exists?(title, issues, client: client, config: config)
+        handle_existing_intermittent_fail
+      else
+        handle_new_intermittent_fail
+      end
     end
 
     def handle_new_intermittent_fail
@@ -37,11 +41,13 @@ module ReportIntermittentFails
       client.close_issue(config.repo_name_with_owner, issue.number) unless master?(branch)
     end
 
+    # rubocop:disable Metrics/AbcSize
     def handle_existing_intermittent_fail
       number = issues.items[0].number
       client.add_comment(config.repo_name_with_owner, number, "#{title}\n\n#{body}")
       client.reopen_issue(config.repo_name_with_owner, number) if master?(branch)
     end
+    # rubocop:enable Metrics/AbcSize
 
     def master?(branch)
       branch == config.main_branch

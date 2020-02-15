@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # CI help
 module CiHelper
   # This should tell if we're running on a CI.

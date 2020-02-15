@@ -21,7 +21,7 @@ module ReportIntermittentFails
 
     # check if an issue with the passed in title exists
     def self.issue_exists?(title, issues = nil, client: octokit_client, config: ReportIntermittentFails::Config)
-      issues = Github.search_issues_by_title(title, client: client, config: config) unless issues
+      issues ||= Github.search_issues_by_title(title, client: client, config: config)
 
       issues.total_count.zero? != true
     end

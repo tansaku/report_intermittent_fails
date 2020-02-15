@@ -38,6 +38,6 @@ task :'endtoend-clean' do
   FileUtils.rm ReportIntermittentFails::Config.first_run_result_file, force: true
   FileUtils.rm ReportIntermittentFails::Config.second_run_result_file, force: true
   FileUtils.rm ReportIntermittentFails::Config.temp_result_file, force: true
-  FileUtils.rm './tmp/failed_on_first_run.txt' , force: true
-  FileUtils.rm './tmp/end_to_end.txt' , force: true
+  FileUtils.rm './tmp/failed_on_first_run.txt', force: true
+  FileUtils.rm './tmp/end_to_end.txt', force: true
 end

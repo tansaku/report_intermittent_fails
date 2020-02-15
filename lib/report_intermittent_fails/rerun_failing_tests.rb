@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 require 'fileutils'
 require_relative 'create_intermittent_fail_issue'
 
@@ -13,7 +14,7 @@ module ReportIntermittentFails
     # Config.logger.info '------------------------'
     Config.logger.info output
     # Config.logger.info '------------------------'
-    original_exit_status = $?.exitstatus
+    original_exit_status = $CHILD_STATUS.exitstatus
     Config.logger.info "Original exit status was: #{original_exit_status}"
     original_exit_status
   end
@@ -26,9 +27,10 @@ module ReportIntermittentFails
     run(Config.rspec_command)
   end
 
+  # rubocop:disable Metrics/AbcSize
   def self.rerun_failing_tests(issue_creator = CreateIntermittentFailIssue,
                                reporter = ReportIntermittentFails)
-    unless File.exists?(Config.default_result_file)
+    unless File.exist?(Config.default_result_file)
       Config.logger.info "\nNothing to rerun\n"
       return
     end
@@ -47,15 +49,16 @@ module ReportIntermittentFails
 
     check_for_and_submit_fails(failed_first_run_specs, reporter, issue_creator, original_exit_status)
   end
+  # rubocop:enable Metrics/AbcSize
 
   def self.arrange_files
     FileUtils.rm Dir.glob(Config.results_files_wildcard) # this is to remove parallel run files
   end
 
   def self.check_for_and_submit_fails(failed_first_run_specs,
-                           reporter,
-                           issue_creator,
-                           original_exit_status)
+                                      reporter,
+                                      issue_creator,
+                                      original_exit_status)
     fails = reporter.list_intermittent_fails(failed_first_run_specs)
 
     Config.logger.info "Submitting #{fails.count} intermittent fails\n"

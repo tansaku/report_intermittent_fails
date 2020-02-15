@@ -3,12 +3,12 @@
 require 'fileutils'
 require_relative 'config'
 
+# Assemble multiple rspec result files into one single file.
 module ReportIntermittentFails
-  # Assemble multiple rspec result files into one single file.
   # Do some CI already provide a similar function?
-  def self.reassemble_spec_examples(results_files_wildcard = Config.results_files_wildcard, # ./spec/examples-*.txt
-                                    default_result_file = Config.default_result_file,       # ./spec/examples.txt
-                                    first_run_result_file = Config.first_run_result_file)   # ./spec/examples.txt.run1
+  def self.reassemble_spec_examples(results_files_wildcard = Config.results_files_wildcard,
+                                    default_result_file = Config.default_result_file,
+                                    first_run_result_file = Config.first_run_result_file)
     # can't get this little bash script to work on jenkins, but works fine on local machine
     # sh '''array=( ./spec/examples-*.txt )
     # { cat ${array[@]:0:1}; grep -hv "^example_id\|^--------" ${array[@]:1}; } > ./spec/examples.txt'''
