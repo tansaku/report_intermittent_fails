@@ -35,12 +35,12 @@ module ReportIntermittentFails
     def self.issue_was_commented_recently?(title,
                                            issues = nil,
                                            minutes: 10,
+                                           delete: false,
                                            client: octokit_client,
                                            config: ReportIntermittentFails::Config)
       issues ||= Github.search_issues_by_title(title, client: client, config: config)
 
       issue_number = issues.items.first.number
-      # this can become huge ~ is there a better way to get the last comment on the issue?
       comments = client.issue_comments(config.repo_name_with_owner, issue_number)
       comment = comments.last
 
@@ -49,7 +49,7 @@ module ReportIntermittentFails
       time = Time.now.utc - (60 * minutes)
       if comment.created_at.utc > time
         #delete the comment before returning
-        client.delete_comment(config.repo_name_with_owner, comment.id)
+        client.delete_comment(config.repo_name_with_owner, comment.id) if delete
         true
       else
         false
