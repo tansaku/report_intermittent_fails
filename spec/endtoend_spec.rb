@@ -43,7 +43,8 @@ RSpec.describe 'End to end' do
           File.write(end_to_end_indicator_file, search_issues_query)
         else
           # this is the first run, no indicator files present
-          # so generate the indicator file and fail - this simulates a random fail, the subsequent run would then succeed
+          # so generate the indicator file and fail,
+          # this simulates a random fail, the subsequent run would then succeed
           File.write(intermittent_fail_indicator_file, 'Fail')
           expect('random').to eq 'fail'
           # after this spec finishes, an issue should be opened

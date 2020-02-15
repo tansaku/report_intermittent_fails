@@ -21,18 +21,25 @@ module ReportIntermittentFails
     end
 
     # check if an issue with the passed in title exists
-    def self.issue_exists?(title, issues = nil, client: octokit_client, config: ReportIntermittentFails::Config)
+    def self.issue_exists?(title,
+                           issues = nil,
+                           client: octokit_client,
+                           config: ReportIntermittentFails::Config)
       issues ||= Github.search_issues_by_title(title, client: client, config: config)
 
       issues.total_count == 1
     end
 
     # check if an issue with the passed in title was commented recently
-    def self.issue_was_commented_recently?(title, issues = nil, client: octokit_client, config: ReportIntermittentFails::Config)
+    def self.issue_was_commented_recently?(title,
+                                           issues = nil,
+                                           client: octokit_client,
+                                           config: ReportIntermittentFails::Config)
       issues ||= Github.search_issues_by_title(title, client: client, config: config)
 
       issue_number = issues.items.first.number
-      comments = client.issue_comments(config.repo_name_with_owner, issue_number) # this can become huge! is there a better way?
+      # this can become huge ~ is there a better way to get the last comment on the issue?
+      comments = client.issue_comments(config.repo_name_with_owner, issue_number)
       comment = comments.last
 
       return false unless comment
