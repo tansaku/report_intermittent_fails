@@ -49,7 +49,7 @@ module ReportIntermittentFails
       time = Time.now.utc - (60 * minutes)
       if comment.created_at.utc > time
         #delete the comment before returning
-        client.delete_comment(config.repo_name_with_owner, comment.number)
+        client.delete_comment(config.repo_name_with_owner, comment.id)
         true
       else
         false
