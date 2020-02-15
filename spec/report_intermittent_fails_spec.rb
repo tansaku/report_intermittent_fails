@@ -17,7 +17,7 @@ describe ReportIntermittentFails do
       let(:filesystem) { double File, readlines: [] }
 
       it 'returns empty array' do
-        expect(ReportIntermittentFails.list_intermittent_fails([], logging: false, filesystem: filesystem)).to eq([])
+        expect(ReportIntermittentFails.list_intermittent_fails([], filesystem: filesystem)).to eq([])
       end
     end
 
@@ -38,7 +38,6 @@ describe ReportIntermittentFails do
         # this assumes that we have a file 'fixtures/examples.txt' that contains 'passed'
         # for 'application_controller_spec.rb[1:1]'
         confirmed_intermittent = ReportIntermittentFails.list_intermittent_fails(first_run_failed_specs,
-                                                                                 logging: false,
                                                                                  filename: 'fixtures/examples.txt')
         expect(confirmed_intermittent).to eq(confirmed_intermittent_failed_specs)
       end
@@ -47,7 +46,6 @@ describe ReportIntermittentFails do
         # this assumes that we have a file 'fixtures/examples.txt' that contains 'failed'
         # for 'application_controller_spec.rb[1:1]'
         confirmed_intermittent = ReportIntermittentFails.list_intermittent_fails(first_run_failed_specs,
-                                                                                 logging: false,
                                                                                  filename: 'fixtures/examples2.txt')
         expect(confirmed_intermittent).to eq([])
       end

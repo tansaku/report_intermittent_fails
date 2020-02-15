@@ -56,10 +56,10 @@ module ReportIntermittentFails
                            reporter,
                            issue_creator,
                            original_exit_status)
-    fails = reporter.list_intermittent_fails(failed_first_run_specs, logging: true)
+    fails = reporter.list_intermittent_fails(failed_first_run_specs)
 
     Config.logger.info "Submitting #{fails.count} intermittent fails\n"
-    Config.logger.info "Github issue body:\n#{body}\n"
+    Config.logger.info "Github issue body:\n#{body}"
     fails.each do |failure|
       title = "Intermittent fail: #{failure}"
       Config.logger.info "Github issue title: #{title}\n"
@@ -72,12 +72,10 @@ module ReportIntermittentFails
   end
 
   def self.list_intermittent_fails(failed_first_run_specs,
-                                   logging: false,
                                    filesystem: File,
                                    filename: Config.second_run_result_file)
     lines = filesystem.readlines(filename)
     failed_first_run_specs.each_with_object([]) do |failure, memo|
-      Config.logger.info failure if logging
       memo << get_rb_file_name(failure) if passed_on_second_run?(lines, failure)
     end
   end
@@ -90,7 +88,7 @@ module ReportIntermittentFails
 
   def self.passed_on_second_run?(lines, failure)
     passed = lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
-    Config.logger.info "Failure '#{failure}' second run: #{passed ? 'passed' : 'failed'}"
+    Config.logger.info "First run failure '#{failure}' second run: #{passed ? 'passed' : 'failed'}"
 
     passed
   end
