@@ -41,7 +41,7 @@ RSpec.describe 'End to end' do
           # rake report:endtoend
 
           # here we only set up an indicator for the third run:
-          File.write(intermittent_fail_indicator_file, search_issues_query)
+          File.write(end_to_end_indicator_file, search_issues_query)
         else
           # when the file is not there, it means this test is being run for the first time,
           # so generate the file and fail - to simulate a random fail, the subsequent run would then succeed
