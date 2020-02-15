@@ -26,6 +26,7 @@ RSpec.describe 'End to end' do
 
           expect(ReportIntermittentFails::Github.issue_exists?(title)).to eq true
           # The following test does not seem to work reliably... why?
+          sleep(60) # try waiting a minute before checking
           expect(ReportIntermittentFails::Github.issue_was_commented_recently?(title, minutes: 3)).to eq true
         elsif File.exist?(intermittent_fail_indicator_file)
           # this is the second run
