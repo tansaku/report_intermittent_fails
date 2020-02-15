@@ -1,7 +1,6 @@
 # CI help
 module CiHelper
-  # CircleCI publishes ENV[CI].
-  # This should tell if we're running on CI.
+  # This should tell if we're running on a CI.
   def self.running_on_ci?
     CiHelper.running_on_travis? || CiHelper.running_on_circleci? || CiHelper.running_on_jenkins?
   end

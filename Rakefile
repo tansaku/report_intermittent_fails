@@ -15,22 +15,29 @@ RSpec::Core::RakeTask.new(:spec)
 
 task default: %i[rubocop spec]
 
-# Following tasks are used only during an end-to-end test on the main repo.
-# TODO: dry up
-namespace :report do
-  desc 'rerun_failing_tests'
-  task :rerun do
-    ReportIntermittentFails.rerun_failing_tests
-  end
-  desc 'reassemble_spec_examples'
-  task :reassemble do
-    ReportIntermittentFails.reassemble_spec_examples
-  end
-  desc 'check endtoend test result'
-  task :endtoend do
-    ReportIntermittentFails.run_endtoend_check
-  end
+# Following tasks are used for an end-to-end test.
+desc 'rerun failing tests'
+task :rerun do
+  ReportIntermittentFails.rerun_failing_tests
 end
-task test_report_fails: ['report:rerun']
-task test_report_fails: ['report:reassemble']
-task test_report_fails: ['report:endtoend']
+
+desc 'reassemble spec examples'
+task :reassemble do
+  ReportIntermittentFails.reassemble_spec_examples
+end
+
+desc 'check endtoend test result'
+task :endtoend do
+  ReportIntermittentFails.run_endtoend_check
+end
+
+desc 'clean endtoend test files'
+task :'endtoend-clean' do
+  FileUtils.rm Dir.glob(ReportIntermittentFails::Config.results_files_wildcard), force: true
+  FileUtils.rm ReportIntermittentFails::Config.default_result_file, force: true
+  FileUtils.rm ReportIntermittentFails::Config.first_run_result_file, force: true
+  FileUtils.rm ReportIntermittentFails::Config.second_run_result_file, force: true
+  FileUtils.rm ReportIntermittentFails::Config.temp_result_file, force: true
+  FileUtils.rm './tmp/failed_on_first_run.txt' , force: true
+  FileUtils.rm './tmp/end_to_end.txt' , force: true
+end

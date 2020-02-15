@@ -4,7 +4,7 @@ require_relative 'github'
 require_relative 'config'
 
 module ReportIntermittentFails
-  # creates an issue on github for an intermittent failing test
+  # Creates an issue on github for an intermittent failing test
   # e.g. repo_name_with_owner: 'agileventures/localsupport'
   class CreateIntermittentFailIssue
     def self.with(title:, body:, branch:, client: Github.octokit_client, config: ReportIntermittentFails::Config)

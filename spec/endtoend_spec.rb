@@ -7,9 +7,9 @@ RSpec.describe 'End to end' do
   if CiHelper.running_on_ci? # run this only on CI
     let(:client) {  Github.octokit_client } # assuming ENV variable for the GITHUB_ACCESS_TOKEN and REPO_NAME_WITH_OWNER is set in the CI tool!
     let(:repo_name_with_owner) { ReportIntermittentFails::Config.repo_name_with_owner }
-    let(:intermittent_fail_indicator_file) { "./tmp/failed_on_first_run.txt" }
-    let(:end_to_end_indicator_file) { "./tmp/end_to_end.txt" }
-    let(:title) { "./spec/endtoend_spec-#{Time.now.getutc}.rb" }
+    let(:intermittent_fail_indicator_file) { './tmp/failed_on_first_run.txt' }
+    let(:end_to_end_indicator_file) { './tmp/end_to_end.txt' }
+    let(:title) { './spec/endtoend_spec.rb' }
 
     let(:search_issues_query) { "repo:#{repo_name_with_owner} \"#{title}\"+in:title" }
 
@@ -40,9 +40,9 @@ RSpec.describe 'End to end' do
           File.write(intermittent_fail_indicator_file, search_issues_query)
         else
           # when the file is not there, it means this test is being run for the first time,
-          # so generate the file and fail to simulate a random fail, the subsequent run would then succeed
+          # so generate the file and fail - to simulate a random fail, the subsequent run would then succeed
           File.write(intermittent_fail_indicator_file, 'Fail')
-          expect("random").to eq "fail"
+          expect('random').to eq 'fail'
           # after this spec finishes, an issue should be opened
         end
       end

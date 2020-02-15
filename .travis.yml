@@ -7,6 +7,6 @@ rvm:
 before_install: gem install bundler -v 2.0.2
 script:
   - bundle exec rspec --failure-exit-code 0
-  - bundle exec rake report:reassemble
-  - bundle exec rake report:rerun
-  - bundle exec rake report:endtoend
+  - bundle exec rake reassemble
+  - bundle exec rake rerun
+  - bundle exec rake endtoend

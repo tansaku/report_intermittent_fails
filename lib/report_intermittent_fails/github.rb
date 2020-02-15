@@ -3,7 +3,7 @@
 require 'octokit'
 
 module ReportIntermittentFails
-  # some extra methods to work with github client
+  # Extra methods to work with the github client
   class Github
     # make sure we have the necessary settings set up
     def self.validate(config)

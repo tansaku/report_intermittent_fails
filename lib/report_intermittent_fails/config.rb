@@ -3,7 +3,7 @@
 require 'logger'
 
 module ReportIntermittentFails
-  # config settings
+  # Settings
   class Config
     def self.logger
       @logger ||= Logger.new(STDOUT, level: :info)

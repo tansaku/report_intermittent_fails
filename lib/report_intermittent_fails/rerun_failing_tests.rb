@@ -5,17 +5,17 @@ require_relative 'create_intermittent_fail_issue'
 
 CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupport/#{ENV['CIRCLE_BUILD_NUM']}/tests"
 
-# tools to help report intermittently failing tests as github issues
+# Re-running and reporting intermittently failing tests as github issues
 module ReportIntermittentFails
   # run command with output and return exit status
   def self.run(command)
     ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
     output = `#{command}` # so here we are relying on rspec config
-    Config.logger.info '------------------------'
+    # Config.logger.info '------------------------'
     Config.logger.info output
-    Config.logger.info '------------------------'
+    # Config.logger.info '------------------------'
     original_exit_status = $?.exitstatus
-    Config.logger.info "original exit status was: #{original_exit_status}"
+    Config.logger.info "Original exit status was: #{original_exit_status}"
     original_exit_status
   end
 
@@ -35,36 +35,37 @@ module ReportIntermittentFails
     end
 
     arrange_files
+
+    # rspec
     original_exit_status = run_rspec
-    #                   examples-2.txt -> examples.txt.run2
-    #FileUtils.mv(Config.temp_result_file, Config.second_run_result_file) # e.g. /examples-2.txt to examples.txt.run2
-    FileUtils.cp(Config.default_result_file, Config.second_run_result_file) # e.g. /examples-2.txt to examples.txt.run2
+
+    # examples.txt -> examples.txt.run2
+    FileUtils.cp(Config.default_result_file, Config.second_run_result_file)
 
     # assume that ./spec/examples.txt.run1 is available from previous reassemble step
     failed_first_run_specs = `grep "| failed" #{Config.first_run_result_file} | cut -d" " -f1`.split("\n")
-    Config.logger.info "\n#{failed_first_run_specs.count} first run failures\n"
+    Config.logger.info "#{failed_first_run_specs.count} first run failures\n"
 
-    check_for_fails(failed_first_run_specs, reporter, issue_creator, original_exit_status)
+    check_for_and_submit_fails(failed_first_run_specs, reporter, issue_creator, original_exit_status)
   end
 
   def self.arrange_files
     FileUtils.rm Dir.glob(Config.results_files_wildcard) # this is to remove parallel run files
-    #                   examples.txt       -> examples-2.txt
-    #FileUtils.cp(Config.default_result_file, Config.temp_result_file) # because TEST_ENV_NUMBER defaulted to 2
   end
 
-  def self.check_for_fails(failed_first_run_specs,
+  def self.check_for_and_submit_fails(failed_first_run_specs,
                            reporter,
                            issue_creator,
                            original_exit_status)
     fails = reporter.list_intermittent_fails(failed_first_run_specs, logging: true)
 
     Config.logger.info "Submitting #{fails.count} intermittent fails\n"
-    Config.logger.info "\nGithub issue body:\n #{body}\n\n"
+    Config.logger.info "Github issue body:\n#{body}\n"
     fails.each do |failure|
-      title = "Intermittent Fail: #{failure}"
-      Config.logger.info "\nGithub issue title: #{title}\n\n"
+      title = "Intermittent fail: #{failure}"
+      Config.logger.info "Github issue title: #{title}\n"
 
+      # submit new issue or add comment on an existing one
       issue_creator.with(title: title, body: body, branch: build_branch)
     end
 
@@ -75,7 +76,6 @@ module ReportIntermittentFails
                                    logging: false,
                                    filesystem: File,
                                    filename: Config.second_run_result_file)
-    Config.logger.info "reading lines from #{filename}"
     lines = filesystem.readlines(filename)
     failed_first_run_specs.each_with_object([]) do |failure, memo|
       Config.logger.info failure if logging
@@ -90,14 +90,15 @@ module ReportIntermittentFails
   end
 
   def self.passed_on_second_run?(lines, failure)
-    Config.logger.info "checking for #{failure} in file"
-    lines.each { |line| Config.logger.info line }
-    lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
+    passed = lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
+    Config.logger.info "Failure '#{failure}' second run: #{passed ? 'passed' : 'failed'}"
+
+    passed
   end
 
   # Move all the below to Config?
   def self.body
-    "Build: #{build_url}\nCommit: #{build_commit}\nBranch: #{build_branch}\n Container: #{build_node}"
+    "Build: #{build_url}\nCommit: #{build_commit}\nBranch: #{build_branch}\nContainer: #{build_node}"
   end
 
   def self.build_branch
