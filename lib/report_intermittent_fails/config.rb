@@ -42,8 +42,12 @@ module ReportIntermittentFails
       ENV['REPO_NAME_WITH_OWNER'] # Idea: can be read from .git/config
     end
 
+    def self.issue_title_prefix
+      "Intermittent fail: "
+    end
+
     def self.issue_title_for(failure)
-      "Intermittent fail: #{failure}"
+      "#{issue_title_prefix}#{failure}"
     end
 
     def self.access_token
