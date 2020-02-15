@@ -33,6 +33,7 @@ module ReportIntermittentFails
     # check if an issue with the passed in title was commented recently
     def self.issue_was_commented_recently?(title,
                                            issues = nil,
+                                           minutes: 10,
                                            client: octokit_client,
                                            config: ReportIntermittentFails::Config)
       issues ||= Github.search_issues_by_title(title, client: client, config: config)
@@ -44,7 +45,7 @@ module ReportIntermittentFails
 
       return false unless comment
 
-      comment.created_at.utc < Time.now.utc - (60 * 5)
+      comment.created_at.utc < Time.now.utc - (60 * minutes)
     end
 
     # expose octokit
