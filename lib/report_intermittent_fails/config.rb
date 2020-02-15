@@ -4,6 +4,7 @@ require 'logger'
 
 module ReportIntermittentFails
   # Settings
+  # Idea: should be loaded from a file, perhaps: .report_intermittent_fails
   class Config
     def self.logger
       @logger ||= Logger.new(STDOUT, level: :info)
@@ -39,6 +40,10 @@ module ReportIntermittentFails
 
     def self.repo_name_with_owner
       ENV['REPO_NAME_WITH_OWNER'] # Idea: can be read from .git/config
+    end
+
+    def self.issue_title_for(failure)
+      "Intermittent fail: #{failure}"
     end
 
     def self.access_token

@@ -65,7 +65,7 @@ module ReportIntermittentFails
     Config.logger.info "Submitting #{fails.count} intermittent fails\n"
     Config.logger.info "Github issue body:\n#{body}"
     fails.each do |failure|
-      title = "Intermittent fail: #{failure}"
+      title = Config.issue_title_for(failure)
       Config.logger.info "Github issue title: #{title}\n"
       # submit new issue or add comment on an existing one
       issue_creator.with(title: title, body: body, branch: build_branch)
