@@ -25,6 +25,7 @@ RSpec.describe 'End to end' do
           File.delete(end_to_end_indicator_file)
 
           expect(ReportIntermittentFails::Github.issue_exists?(title)).to eq true
+          sleep(1)
           expect(ReportIntermittentFails::Github.issue_was_commented_in_the_last_minute?(title)).to eq true
         elsif File.exist?(intermittent_fail_indicator_file)
           # this is the second run
