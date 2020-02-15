@@ -9,7 +9,6 @@ CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupp
 module ReportIntermittentFails
   # run command with output and return exit status
   def self.run(command)
-    ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
     output = `#{command}` # so here we are relying on rspec config
     # Config.logger.info '------------------------'
     Config.logger.info output
