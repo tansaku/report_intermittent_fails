@@ -66,7 +66,7 @@ module ReportIntermittentFails
     fails.each do |failure|
       title = "Intermittent fail: #{failure}"
       Config.logger.info "Github issue title: #{title}\n"
-      Config.logger.info "TRAVIS_BRANCH: #{ENV['TRAVIS_BRANCH']}\n"
+      Config.logger.info "TRAVIS_BRANCH: #{ENV['TRAVIS_BRANCH']} #{`git rev-parse --abbrev-ref HEAD`.chomp}\n"
       # submit new issue or add comment on an existing one
       issue_creator.with(title: title, body: body, branch: build_branch)
     end
