@@ -46,9 +46,7 @@ module ReportIntermittentFails
       return false unless comment
 
       time = Time.now.utc - (60 * minutes)
-      puts "#{comment.inspect}\n comparing #{comment.created_at.utc} : #{time}"
-
-      comment.created_at.utc < time
+      comment.created_at.utc > time
     end
 
     # expose octokit
