@@ -3,6 +3,7 @@
 require 'English'
 require 'fileutils'
 require_relative 'create_intermittent_fail_issue'
+require_relative 'ci_helper'
 
 CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupport/#{ENV['CIRCLE_BUILD_NUM']}/tests"
 
@@ -66,7 +67,7 @@ module ReportIntermittentFails
     fails.each do |failure|
       title = "Intermittent fail: #{failure}"
       Config.logger.info "Github issue title: #{title}\n"
-      Config.logger.info "TRAVIS_BRANCH: #{ENV['TRAVIS_BRANCH']} #{`git rev-parse --abbrev-ref HEAD`.chomp}\n"
+      Config.logger.info "TRAVIS_BRANCH: #{ENV['TRAVIS_BRANCH']} #{ENV['TRAVIS_PULL_REQUEST_BRANCH']}\n"
       # submit new issue or add comment on an existing one
       issue_creator.with(title: title, body: body, branch: build_branch)
     end
@@ -102,7 +103,15 @@ module ReportIntermittentFails
   end
 
   def self.build_branch
-    ENV['CIRCLE_BRANCH'] || ENV['GIT_BRANCH'] || ENV['TRAVIS_BRANCH'] || `git rev-parse --abbrev-ref HEAD`.chomp
+    if CiHelper.running_on_travis?
+      (ENV['TRAVIS_PULL_REQUEST_BRANCH'] && ENV['TRAVIS_PULL_REQUEST_BRANCH'] != "") ? ENV['TRAVIS_PULL_REQUEST_BRANCH'] : ENV['TRAVIS_BRANCH']
+    elsif CiHelper.running_on_circleci?
+      ENV['CIRCLE_BRANCH']
+    elsif CiHelper.running_on_jenkins?
+      ENV['GIT_BRANCH']
+    else
+      `git rev-parse --abbrev-ref HEAD`.chomp
+    end
   end
 
   def self.build_url
