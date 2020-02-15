@@ -27,8 +27,8 @@ module ReportIntermittentFails
       issues.total_count == 1
     end
 
-    # check if an issue with the passed in title was commented in the last minute
-    def self.issue_was_commented_in_the_last_minute?(title, issues = nil, client: octokit_client, config: ReportIntermittentFails::Config)
+    # check if an issue with the passed in title was commented recently
+    def self.issue_was_commented_recently?(title, issues = nil, client: octokit_client, config: ReportIntermittentFails::Config)
       issues ||= Github.search_issues_by_title(title, client: client, config: config)
 
       issue_number = issues.items.first.number
@@ -37,7 +37,7 @@ module ReportIntermittentFails
 
       return false unless comment
 
-      comment.created_at.utc < Time.now.utc - 60
+      comment.created_at.utc < Time.now.utc - (60 * 5)
     end
 
     # expose octokit
