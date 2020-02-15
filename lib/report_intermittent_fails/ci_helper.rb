@@ -23,4 +23,19 @@ module CiHelper
   def self.running_on_travis?
     ENV['TRAVIS']
   end
+
+  # TRAVIS_BRANCH:
+  #   for push builds, or builds not triggered by a pull request, this is the name of the branch.
+  #   for builds triggered by a pull request this is the name of the branch targeted by the pull request.
+  #   for builds triggered by a tag, this is the same as the name of the tag (TRAVIS_TAG).
+  # TRAVIS_PULL_REQUEST_BRANCH:
+  #   if the current job is a pull request, the name of the branch from which the PR originated.
+  #   if the current job is a push build, this variable is empty ("").
+  def self.travis_branch
+    if ENV['TRAVIS_PULL_REQUEST_BRANCH'] && ENV['TRAVIS_PULL_REQUEST_BRANCH'] != ''
+      ENV['TRAVIS_PULL_REQUEST_BRANCH']
+    else
+      ENV['TRAVIS_BRANCH']
+    end
+  end
 end

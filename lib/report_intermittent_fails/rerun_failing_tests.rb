@@ -67,7 +67,6 @@ module ReportIntermittentFails
     fails.each do |failure|
       title = "Intermittent fail: #{failure}"
       Config.logger.info "Github issue title: #{title}\n"
-      Config.logger.info "TRAVIS_BRANCH: #{ENV['TRAVIS_BRANCH']} #{ENV['TRAVIS_PULL_REQUEST_BRANCH']}\n"
       # submit new issue or add comment on an existing one
       issue_creator.with(title: title, body: body, branch: build_branch)
     end
@@ -104,7 +103,7 @@ module ReportIntermittentFails
 
   def self.build_branch
     if CiHelper.running_on_travis?
-      (ENV['TRAVIS_PULL_REQUEST_BRANCH'] && ENV['TRAVIS_PULL_REQUEST_BRANCH'] != "") ? ENV['TRAVIS_PULL_REQUEST_BRANCH'] : ENV['TRAVIS_BRANCH']
+      CiHelper.travis_branch
     elsif CiHelper.running_on_circleci?
       ENV['CIRCLE_BRANCH']
     elsif CiHelper.running_on_jenkins?
