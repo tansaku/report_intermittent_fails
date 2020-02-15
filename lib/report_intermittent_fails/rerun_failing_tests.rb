@@ -24,7 +24,7 @@ module ReportIntermittentFails
   end
 
   def self.run_rspec
-    exit(run(Config.rspec_command))
+    run(Config.rspec_command)
   end
 
   # rubocop:disable Metrics/AbcSize
