@@ -17,8 +17,8 @@ RSpec.describe 'End to end' do
       Dir.mkdir('tmp') unless File.exists?('tmp')
     end
 
-    context 'randomly failing issue reporting' do
-      it 'creates new issue and leaves it open' do
+    context 'randomly failing' do
+      it 'checks' do
         if File.exists?(end_to_end_indicator_file)
           # this is the third run, we need to check if the issue was created and left open
           # delete the indicator file
