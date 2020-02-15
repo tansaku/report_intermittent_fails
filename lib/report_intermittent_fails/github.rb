@@ -46,7 +46,13 @@ module ReportIntermittentFails
       return false unless comment
 
       time = Time.now.utc - (60 * minutes)
-      comment.created_at.utc > time
+      if comment.created_at.utc > time
+        #delete the comment before returning
+        client.delete_comment(config.repo_name_with_owner, comment.number)
+        true
+      else
+        false
+      end
     end
 
     # expose octokit

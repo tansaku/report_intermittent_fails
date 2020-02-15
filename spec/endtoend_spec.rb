@@ -25,7 +25,7 @@ RSpec.describe 'End to end' do
           File.delete(end_to_end_indicator_file)
 
           expect(ReportIntermittentFails::Github.issue_exists?(title)).to eq true
-          expect(ReportIntermittentFails::Github.issue_was_commented_recently?(title, minutes: 3)).to eq true
+          expect(ReportIntermittentFails::Github.issue_was_commented_recently?(title, minutes: 1)).to eq true
           # maybe we should delete the comment after this check?
         elsif File.exist?(intermittent_fail_indicator_file)
           # this is the second run
