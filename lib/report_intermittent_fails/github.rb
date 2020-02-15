@@ -35,6 +35,8 @@ module ReportIntermittentFails
       comments = client.issue_comments(config.repo_name_with_owner, issue_number) # this can become huge! is there a better way?
       comment = comments.last
 
+      return false unless comment
+
       comment.created_at.utc < Time.now.utc - 60
     end
 
