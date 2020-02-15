@@ -31,6 +31,7 @@ module ReportIntermittentFails
     end
 
     # check if an issue with the passed in title was commented recently
+    # if so, attempt to delete the comment
     def self.issue_was_commented_recently?(title,
                                            issues = nil,
                                            minutes: 10,
