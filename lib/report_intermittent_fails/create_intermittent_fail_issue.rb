@@ -1,54 +1,56 @@
 # frozen_string_literal: true
 
-require 'octokit'
+require_relative 'github'
+require_relative 'config'
 
 module ReportIntermittentFails
-  CLIENT = Octokit::Client.new(access_token: ENV['GITHUB_ACCESS_TOKEN'])
-
-  # creates an issue on github for an intermittent failing test
+  # Creates an issue on github for an intermittent failing test
   # e.g. repo_name_with_owner: 'agileventures/localsupport'
   class CreateIntermittentFailIssue
-    def self.with(title:, body:, branch:, client: CLIENT)
-      new(title, body, branch, client).send(:create_intermittent_fail_spec_issue)
+    def self.with(title:, body:, branch:, client: Github.octokit_client, config: ReportIntermittentFails::Config)
+      new(title, body, branch, client, config).send(:create_intermittent_fail_spec_issue)
     end
 
     private
 
-    attr_reader :title, :body, :branch, :client
-    attr_accessor :results
+    attr_reader :title, :body, :branch, :client, :config
+    attr_accessor :issues
 
-    def initialize(title, body, branch, client)
+    def initialize(title, body, branch, client, config)
       @title = title
       @body = body
       @branch = branch
       @client = client
+      @config = config
     end
 
     def create_intermittent_fail_spec_issue
-      # TODO: maybe should wig out if no REPO_NAME_WITH_OWNER
-      # or just log everything?
-      query = "repo:#{Config.repo_name_with_owner} \"#{title}\"+in:title"
-      self.results = client.search_issues(query)
-      # Config.logger.info "found #{results.total_count} issues for #{query}"
-      results.total_count.zero? ? handle_new_intermittent_fail : handle_existing_intermittent_fail
+      self.issues = Github.search_issues_by_title(title, client: client, config: config)
+      if Github.issue_exists?(title, issues, client: client, config: config)
+        handle_existing_intermittent_fail
+      else
+        handle_new_intermittent_fail
+      end
     end
 
     def handle_new_intermittent_fail
-      issue = client.create_issue(Config.repo_name_with_owner,
+      issue = client.create_issue(config.repo_name_with_owner,
                                   title,
                                   body,
                                   labels: [':dolphin: intermittent_fail spec'])
-      client.close_issue(Config.repo_name_with_owner, issue.number) unless master?(branch)
+      client.close_issue(config.repo_name_with_owner, issue.number) unless master?(branch)
     end
 
+    # rubocop:disable Metrics/AbcSize
     def handle_existing_intermittent_fail
-      number = results.items[0].number
-      client.add_comment(Config.repo_name_with_owner, number, "#{title}\n\n#{body}")
-      client.reopen_issue(Config.repo_name_with_owner, number) if master?(branch)
+      number = issues.items[0].number
+      client.add_comment(config.repo_name_with_owner, number, "#{title}\n\n#{body}")
+      client.reopen_issue(config.repo_name_with_owner, number) if master?(branch)
     end
+    # rubocop:enable Metrics/AbcSize
 
     def master?(branch)
-      branch == Config.main_branch
+      branch == config.main_branch
     end
   end
 end

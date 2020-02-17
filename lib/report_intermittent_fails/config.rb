@@ -3,7 +3,8 @@
 require 'logger'
 
 module ReportIntermittentFails
-  # config settings
+  # Settings
+  # Idea: should be loaded from a file, perhaps: .report_intermittent_fails
   class Config
     def self.logger
       @logger ||= Logger.new(STDOUT, level: :info)
@@ -33,8 +34,26 @@ module ReportIntermittentFails
       'bundle exec rspec --only-failures'
     end
 
+    # :nocov:
+    def self.rspec_endtoend_command
+      'bundle exec rspec spec/endtoend_spec.rb'
+    end
+    # :nocov:
+
     def self.repo_name_with_owner
-      ENV['REPO_NAME_WITH_OWNER']
+      ENV['REPO_NAME_WITH_OWNER'] # Idea: can be read from .git/config
+    end
+
+    def self.issue_title_prefix
+      'Intermittent fail: '
+    end
+
+    def self.issue_title_for(failure)
+      "#{issue_title_prefix}#{failure}"
+    end
+
+    def self.access_token
+      ENV['GITHUB_ACCESS_TOKEN']
     end
 
     def self.main_branch

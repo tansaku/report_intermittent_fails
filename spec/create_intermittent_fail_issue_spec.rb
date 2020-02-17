@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'report_intermittent_fails/create_intermittent_fail_issue'
+require 'report_intermittent_fails'
 
 RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
   let(:client) { spy :octokit_client }
@@ -13,7 +13,8 @@ RSpec.describe ReportIntermittentFails::CreateIntermittentFailIssue do
     described_class.with(title: title,
                          body: 'body',
                          branch: branch,
-                         client: client)
+                         client: client,
+                         config: config)
   end
 
   let(:config) { ReportIntermittentFails::Config }

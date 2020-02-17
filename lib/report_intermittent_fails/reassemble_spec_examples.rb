@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require_relative 'config'
 
-# just holding some methods to be used in rake tasks
-# do some CI already provide a similar function?
+# Assemble multiple rspec result files into one single file.
 module ReportIntermittentFails
-  def self.reassemble_spec_examples(results_files_wildcard = './spec/examples-*.txt',
-                                    default_result_file = './spec/examples.txt',
-                                    first_run_result_file = './spec/examples.txt.run1')
+  # Do some CI already provide a similar function?
+  def self.reassemble_spec_examples(results_files_wildcard = Config.results_files_wildcard,
+                                    default_result_file = Config.default_result_file,
+                                    first_run_result_file = Config.first_run_result_file)
     # can't get this little bash script to work on jenkins, but works fine on local machine
     # sh '''array=( ./spec/examples-*.txt )
     # { cat ${array[@]:0:1}; grep -hv "^example_id\|^--------" ${array[@]:1}; } > ./spec/examples.txt'''
     # so using below ruby instead
-
     file_contents = file_contents_nested_array(results_files_wildcard)
 
     unless file_contents.empty?
@@ -23,6 +23,8 @@ module ReportIntermittentFails
         end
       end
     end
+
+    #            examples.txt       -> examples.txt.run1
     FileUtils.cp(default_result_file, first_run_result_file)
 
     # have tested by adding the following to the install dependencies stage on jenkins

@@ -17,7 +17,7 @@ describe ReportIntermittentFails do
       let(:filesystem) { double File, readlines: [] }
 
       it 'returns empty array' do
-        expect(ReportIntermittentFails.list_intermittent_fails([], logging: false, filesystem: filesystem)).to eq([])
+        expect(ReportIntermittentFails.list_intermittent_fails([], filesystem: filesystem)).to eq([])
       end
     end
 
@@ -38,7 +38,6 @@ describe ReportIntermittentFails do
         # this assumes that we have a file 'fixtures/examples.txt' that contains 'passed'
         # for 'application_controller_spec.rb[1:1]'
         confirmed_intermittent = ReportIntermittentFails.list_intermittent_fails(first_run_failed_specs,
-                                                                                 logging: false,
                                                                                  filename: 'fixtures/examples.txt')
         expect(confirmed_intermittent).to eq(confirmed_intermittent_failed_specs)
       end
@@ -47,7 +46,6 @@ describe ReportIntermittentFails do
         # this assumes that we have a file 'fixtures/examples.txt' that contains 'failed'
         # for 'application_controller_spec.rb[1:1]'
         confirmed_intermittent = ReportIntermittentFails.list_intermittent_fails(first_run_failed_specs,
-                                                                                 logging: false,
                                                                                  filename: 'fixtures/examples2.txt')
         expect(confirmed_intermittent).to eq([])
       end
@@ -77,6 +75,44 @@ describe ReportIntermittentFails do
     expect(ReportIntermittentFails.get_rb_file_name('ruby.rb[1:1]')).to eq('ruby.rb')
   end
 
+  context '.build_branch' do
+    context 'running on travis' do
+      before do
+        allow(CiHelper).to receive(:running_on_travis?).and_return true
+        allow(CiHelper).to receive(:running_on_circleci?).and_return false
+        allow(CiHelper).to receive(:running_on_jenkins?).and_return false
+      end
+
+      it 'returns the branch' do
+        expect(ReportIntermittentFails.build_branch).to eq CiHelper.travis_branch
+      end
+    end
+
+    context 'running on circleci' do
+      before do
+        allow(CiHelper).to receive(:running_on_travis?).and_return false
+        allow(CiHelper).to receive(:running_on_circleci?).and_return true
+        allow(CiHelper).to receive(:running_on_jenkins?).and_return false
+      end
+
+      it 'returns the branch' do
+        expect(ReportIntermittentFails.build_branch).to eq ENV['CIRCLE_BRANCH']
+      end
+    end
+
+    context 'running on jenkins' do
+      before do
+        allow(CiHelper).to receive(:running_on_travis?).and_return false
+        allow(CiHelper).to receive(:running_on_circleci?).and_return false
+        allow(CiHelper).to receive(:running_on_jenkins?).and_return true
+      end
+
+      it 'returns the branch' do
+        expect(ReportIntermittentFails.build_branch).to eq ENV['GIT_BRANCH']
+      end
+    end
+  end
+
   # rubocop:disable Style/MultilineBlockChain
   context '.rerun_failing_tests' do
     let(:results_files_wildcard) { './fixtures/examples-*.txt.dummy' }
@@ -96,6 +132,19 @@ describe ReportIntermittentFails do
       allow(config).to receive(:rspec_command).and_return rspec_command
     end
 
+    context 'when there is nothing to rerun' do
+      let(:default_result_file) { 'nosuchfile' }
+
+      it 'returns early' do
+        expect(issue_creator).not_to receive(:with)
+        expect do
+          ReportIntermittentFails.rerun_failing_tests(issue_creator)
+        end.to raise_error(SystemExit) do |error|
+          expect(error.status).to eq(0)
+        end
+      end
+    end
+
     context 'one intermittent fail' do
       let(:default_result_file) { './fixtures/default_result_file-with-intermittent.txt' }
 
@@ -112,7 +161,6 @@ describe ReportIntermittentFails do
     context 'no intermittent fails' do
       let(:default_result_file) { './fixtures/default_result_file.txt' }
 
-      # TODO: - could do with a full end to end test as well where collaborators are not stubbed
       it '#rerun_failing_tests' do
         expect(issue_creator).not_to receive(:with)
         expect do

@@ -4,7 +4,7 @@ require 'report_intermittent_fails'
 require 'rails'
 
 module ReportIntermittentFails
-  # binds rake tasks into Rails
+  # Binds rake tasks into Rails
   class Railtie < Rails::Railtie
     railtie_name :report_intermittent_fails
     rake_tasks do

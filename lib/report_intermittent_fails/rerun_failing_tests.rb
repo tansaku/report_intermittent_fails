@@ -1,65 +1,88 @@
 # frozen_string_literal: true
 
+require 'English'
 require 'fileutils'
 require_relative 'create_intermittent_fail_issue'
+require_relative 'ci_helper'
 
 CIRCLE_BUILD_URL = "https://app.circleci.com/jobs/github/agileventures/localsupport/#{ENV['CIRCLE_BUILD_NUM']}/tests"
 
-# tools to help report intermittently failing tests as github issues
+# Re-running and reporting intermittently failing tests as github issues
 module ReportIntermittentFails
-  def self.rerun_failing_tests(issue_creator = CreateIntermittentFailIssue,
-                               reporter = ReportIntermittentFails)
-    arrange_files
-    original_exit_status = run_rspec_and_output
-    FileUtils.mv(Config.temp_result_file, Config.second_run_result_file) # e.g. /examples-2.txt to examples.txt.run2
-
-    # assume that ./spec/examples.txt.run1 is available from previous reassemble step
-    failed_first_run_specs = `grep "| failed" #{Config.first_run_result_file} | cut -d" " -f1`.split("\n")
-    Config.logger.info "\n#{failed_first_run_specs.count} first run failures\n"
-
-    check_for_fails(failed_first_run_specs, reporter, issue_creator, original_exit_status)
-  end
-
-  def self.arrange_files
-    FileUtils.rm Dir.glob(Config.results_files_wildcard) # this is to remove parallel run files
-    FileUtils.cp(Config.default_result_file, Config.temp_result_file) # because TEST_ENV_NUMBER defaulted to 2
-  end
-
-  def self.run_rspec_and_output
-    ENV['TEST_ENV_NUMBER'] = '2' # just in case this ever changes in future TODO - this feels wrong
-    output = `#{Config.rspec_command}` # so here we are relying on rspec config
-    Config.logger.info '------------------------'
+  # run command with output and return exit status
+  def self.run(command)
+    output = `#{command}` # so here we are relying on rspec config
+    # Config.logger.info '------------------------'
     Config.logger.info output
-    Config.logger.info '------------------------'
+    # Config.logger.info '------------------------'
     original_exit_status = $CHILD_STATUS.exitstatus
-    Config.logger.info "original exit status was: #{original_exit_status}"
+    Config.logger.info "Original exit status was: #{original_exit_status}"
     original_exit_status
   end
 
-  def self.check_for_fails(failed_first_run_specs,
-                           reporter,
-                           issue_creator,
-                           original_exit_status)
-    fails = reporter.list_intermittent_fails(failed_first_run_specs, logging: true)
+  # :nocov:
+  def self.run_endtoend_check
+    exit(run(Config.rspec_endtoend_command))
+  end
+  # :nocov:
 
-    Config.logger.info "\nGithub Issue body info:\n #{body}\n\n"
+  def self.run_rspec
+    run(Config.rspec_command)
+  end
+
+  # rubocop:disable Metrics/AbcSize
+  def self.rerun_failing_tests(issue_creator = CreateIntermittentFailIssue,
+                               reporter = ReportIntermittentFails)
+    unless File.exist?(Config.default_result_file)
+      Config.logger.info "\nNothing to rerun\n"
+      exit(0)
+    end
+
+    arrange_files
+
+    # rspec
+    original_exit_status = run_rspec
+
+    # examples.txt -> examples.txt.run2
+    FileUtils.cp(Config.default_result_file, Config.second_run_result_file)
+
+    # assume that ./spec/examples.txt.run1 is available from previous reassemble step
+    failed_first_run_specs = `grep "| failed" #{Config.first_run_result_file} | cut -d" " -f1`.split("\n")
+    Config.logger.info "#{failed_first_run_specs.count} first run failures\n"
+
+    check_for_and_submit_fails(failed_first_run_specs, reporter, issue_creator, original_exit_status)
+  end
+  # rubocop:enable Metrics/AbcSize
+
+  def self.arrange_files
+    FileUtils.rm Dir.glob(Config.results_files_wildcard) # this is to remove parallel run files
+  end
+
+  # rubocop:disable Metrics/AbcSize
+  def self.check_for_and_submit_fails(failed_first_run_specs,
+                                      reporter,
+                                      issue_creator,
+                                      original_exit_status)
+    fails = reporter.list_intermittent_fails(failed_first_run_specs)
+
     Config.logger.info "Submitting #{fails.count} intermittent fails\n"
-    fails.each do |fail|
-      Config.logger.info fail
-      issue_creator.with(title: "Intermittent Fail: #{fail}", body: body, branch: build_branch)
+    Config.logger.info "Github issue body:\n#{body}"
+    fails.each do |failure|
+      title = Config.issue_title_for(failure)
+      Config.logger.info "Github issue title: #{title}\n"
+      # submit new issue or add comment on an existing one
+      issue_creator.with(title: title, body: body, branch: build_branch)
     end
 
     exit(original_exit_status)
   end
+  # rubocop:enable Metrics/AbcSize
 
   def self.list_intermittent_fails(failed_first_run_specs,
-                                   logging: false,
                                    filesystem: File,
                                    filename: Config.second_run_result_file)
-    Config.logger.info "reading lines from #{filename}"
     lines = filesystem.readlines(filename)
     failed_first_run_specs.each_with_object([]) do |failure, memo|
-      Config.logger.info failure if logging
       memo << get_rb_file_name(failure) if passed_on_second_run?(lines, failure)
     end
   end
@@ -71,18 +94,27 @@ module ReportIntermittentFails
   end
 
   def self.passed_on_second_run?(lines, failure)
-    Config.logger.info "checking for #{failure} in file"
-    lines.each { |line| Config.logger.info line }
-    lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
+    passed = lines.count { |line| line =~ /#{Regexp.quote(failure)}.*passed/ }.positive?
+    Config.logger.info "First run failure '#{failure}' second run: #{passed ? 'passed' : 'failed'}"
+
+    passed
   end
 
   # Move all the below to Config?
   def self.body
-    "Build: #{build_url}\nCommit: #{build_commit}\nBranch: #{build_branch}\n Container: #{build_node}"
+    "Build: #{build_url}\nCommit: #{build_commit}\nBranch: #{build_branch}\nContainer: #{build_node}"
   end
 
   def self.build_branch
-    ENV['CIRCLE_BRANCH'] || ENV['GIT_BRANCH'] || ENV['TRAVIS_BRANCH'] || `git rev-parse --abbrev-ref HEAD`.chomp
+    if CiHelper.running_on_travis?
+      CiHelper.travis_branch
+    elsif CiHelper.running_on_circleci?
+      ENV['CIRCLE_BRANCH']
+    elsif CiHelper.running_on_jenkins?
+      ENV['GIT_BRANCH']
+    else
+      `git rev-parse --abbrev-ref HEAD`.chomp
+    end
   end
 
   def self.build_url
