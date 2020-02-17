@@ -58,6 +58,7 @@ module ReportIntermittentFails
     FileUtils.rm Dir.glob(Config.results_files_wildcard) # this is to remove parallel run files
   end
 
+  # rubocop:disable Metrics/AbcSize
   def self.check_for_and_submit_fails(failed_first_run_specs,
                                       reporter,
                                       issue_creator,
@@ -75,6 +76,7 @@ module ReportIntermittentFails
 
     exit(original_exit_status)
   end
+  # rubocop:enable Metrics/AbcSize
 
   def self.list_intermittent_fails(failed_first_run_specs,
                                    filesystem: File,

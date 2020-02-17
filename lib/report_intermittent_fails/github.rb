@@ -33,6 +33,9 @@ module ReportIntermittentFails
 
     # check if an issue with the passed in title was commented recently
     # if so, attempt to delete the comment
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/ParameterLists
     def self.issue_was_commented_recently?(title,
                                            issues = nil,
                                            minutes: 10,
@@ -56,6 +59,9 @@ module ReportIntermittentFails
         false
       end
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/ParameterLists
 
     # expose octokit
     def self.octokit_client(config = ReportIntermittentFails::Config)
