@@ -20,9 +20,11 @@ module ReportIntermittentFails
     original_exit_status
   end
 
+  # :nocov:
   def self.run_endtoend_check
     exit(run(Config.rspec_endtoend_command))
   end
+  # :nocov:
 
   def self.run_rspec
     run(Config.rspec_command)
@@ -33,7 +35,7 @@ module ReportIntermittentFails
                                reporter = ReportIntermittentFails)
     unless File.exist?(Config.default_result_file)
       Config.logger.info "\nNothing to rerun\n"
-      return
+      exit(0)
     end
 
     arrange_files

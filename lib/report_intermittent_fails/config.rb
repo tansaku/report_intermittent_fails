@@ -34,16 +34,18 @@ module ReportIntermittentFails
       'bundle exec rspec --only-failures'
     end
 
+    # :nocov:
     def self.rspec_endtoend_command
       'bundle exec rspec spec/endtoend_spec.rb'
     end
+    # :nocov:
 
     def self.repo_name_with_owner
       ENV['REPO_NAME_WITH_OWNER'] # Idea: can be read from .git/config
     end
 
     def self.issue_title_prefix
-      "Intermittent fail: "
+      'Intermittent fail: '
     end
 
     def self.issue_title_for(failure)

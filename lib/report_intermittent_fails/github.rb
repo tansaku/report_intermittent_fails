@@ -21,6 +21,7 @@ module ReportIntermittentFails
     end
 
     # check if an issue with the passed in title exists
+    # :nocov:
     def self.issue_exists?(title,
                            issues = nil,
                            client: octokit_client,
@@ -48,7 +49,7 @@ module ReportIntermittentFails
 
       time = Time.now.utc - (60 * minutes)
       if comment.created_at.utc > time
-        #delete the comment before returning
+        # delete the comment before returning
         client.delete_comment(config.repo_name_with_owner, comment.id) if delete
         true
       else
@@ -62,5 +63,6 @@ module ReportIntermittentFails
 
       Octokit::Client.new(access_token: config.access_token)
     end
+    # :nocov:
   end
 end
